@@ -26,8 +26,6 @@
 #include "system.h"
 #include "syscall.h"
 
-#define MaxFileLength 32 // Do dai quy uoc cho file name
-
 //----------------------------------------------------------------------
 // ExceptionHandler
 // 	Entry point into the Nachos kernel.  Called when a user program
@@ -509,8 +507,106 @@ void Exception_Join()
 
 void Exception_Exit()
 {
-    
+	int exitStatus = machine->ReadRegister(4);
+
+	if(exitStatus == 0){	
+		int res = pTab->ExitUpdate(exitStatus);
+
+		currentThread->FreeSpace();
+		currentThread->Finish();
+	}
 }
+
+void Exception_CreateSemaphore()
+{
+	int addr;
+	int semval;
+
+	//Lấy các tham số từ thanh ghi
+	addr = machine->ReadRegister(4);
+	semval = machine->ReadRegister(5);
+
+	char *name = User2System(addr, 255);
+	if (name == NULL)
+	{
+		DEBUG('a', "\nKhong du bo nho");
+		printf("\nKhong du bo nho");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		return;
+	}
+
+	if (semTab->Create(name, semval) == -1)
+	{
+		DEBUG('a', "\nCo loi khi khoi tao semaphore");
+		printf("\nCo loi khi khoi tao semaphore");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		return;
+	}
+	
+	delete[] name;
+	machine->WriteRegister(2, 0);
+}
+
+void Exception_Wait()
+{
+	int addr;
+
+	addr = machine->ReadRegister(4);
+
+	char *name = User2System(addr, 255);
+	if (name == NULL)
+	{
+		DEBUG('a', "\nKhong du bo nho");
+		printf("\nKhong du bo nho");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		return;
+	}
+
+	if (semTab->Wait(name) == -1)
+	{
+		DEBUG('a', "\n Khong ton tai ten semaphore nay!");
+		printf("\n Khong ton tai ten semaphore nay!");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		return;				
+	}
+	
+	delete[] name;
+	machine->WriteRegister(2, 0);
+}
+
+void Exception_Signal()
+{
+	int addr;
+
+	addr = machine->ReadRegister(4);
+
+	char *name = User2System(addr, 255);
+	if (name == NULL)
+	{
+		DEBUG('a', "\nKhong du bo nho");
+		printf("\nKhong du bo nho");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		return;
+	}
+
+	if (semTab->Signal(name) == -1)
+	{
+		DEBUG('a', "\n Khong ton tai ten semaphore nay!");
+		printf("\n Khong ton tai ten semaphore nay!");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		return;				
+	}
+	
+	delete[] name;
+	machine->WriteRegister(2, 0);
+}
+
 // Ham xu ly ngoai le runtime Exception va system call
 void ExceptionHandler(ExceptionType which)
 {
@@ -557,6 +653,16 @@ void ExceptionHandler(ExceptionType which)
 
 	case SyscallException:
 		switch (type){
+		case SC_Sum:
+		{
+			//Code mẫu
+			int a = machine->ReadRegister(4);
+			int b = machine->ReadRegister(5);
+			
+			machine->WriteRegister(2, a + b);
+			Increase_ProgramCounter();
+			return;
+		}
 
 		case SC_Halt:
 			DEBUG('a', "\nShutdown, initiated by user program. ");
@@ -629,140 +735,27 @@ void ExceptionHandler(ExceptionType which)
 			return;
 
 		case SC_Exit:
-		{
-			//void Exit(int status);
-			// Input: status code
-			int exitStatus = machine->ReadRegister(4);
-
-			if(exitStatus != 0)
-			{
-				Increase_ProgramCounter();
-				return;
-				
-			}			
-			
-			int res = pTab->ExitUpdate(exitStatus);
-			//machine->WriteRegister(2, res);
-
-			currentThread->FreeSpace();
-			currentThread->Finish();
+			Exception_Exit();
 			Increase_ProgramCounter();
-			return; 
-				
-		}
+			return;
+
 		case SC_CreateSemaphore:
-		{
-			// int CreateSemaphore(char* name, int semval).
-			int virtAddr = machine->ReadRegister(4);
-			int semval = machine->ReadRegister(5);
-
-			char *name = User2System(virtAddr, MaxFileLength + 1);
-			if(name == NULL)
-			{
-				DEBUG('a', "\n Not enough memory in System");
-				printf("\n Not enough memory in System");
-				machine->WriteRegister(2, -1);
-				delete[] name;
-				Increase_ProgramCounter();
-				return;
-			}
-			
-			int res = semTab->Create(name, semval);
-
-			if(res == -1)
-			{
-				DEBUG('a', "\n Khong the khoi tao semaphore");
-				printf("\n Khong the khoi tao semaphore");
-				machine->WriteRegister(2, -1);
-				delete[] name;
-				Increase_ProgramCounter();
-				return;				
-			}
-			
-			delete[] name;
-			machine->WriteRegister(2, res);
+			Exception_CreateSemaphore();
 			Increase_ProgramCounter();
 			return;
-		}
-
+		
 		case SC_Wait:			
-		{
-			// int Wait(char* name)
-			int virtAddr = machine->ReadRegister(4);
-
-			char *name = User2System(virtAddr, MaxFileLength + 1);
-			if(name == NULL)
-			{
-				DEBUG('a', "\n Not enough memory in System");
-				printf("\n Not enough memory in System");
-				machine->WriteRegister(2, -1);
-				delete[] name;
-				Increase_ProgramCounter();
-				return;
-			}
-			
-			int res = semTab->Wait(name);
-
-			if(res == -1)
-			{
-				DEBUG('a', "\n Khong ton tai ten semaphore nay!");
-				printf("\n Khong ton tai ten semaphore nay!");
-				machine->WriteRegister(2, -1);
-				delete[] name;
-				Increase_ProgramCounter();
-				return;				
-			}
-			
-			delete[] name;
-			machine->WriteRegister(2, res);
+			Exception_Wait();
 			Increase_ProgramCounter();
 			return;
-		}
+
 		case SC_Signal:		
-		{
-			// int Signal(char* name)
-			int virtAddr = machine->ReadRegister(4);
-
-			char *name = User2System(virtAddr, MaxFileLength + 1);
-			if(name == NULL)
-			{
-				DEBUG('a', "\n Not enough memory in System");
-				printf("\n Not enough memory in System");
-				machine->WriteRegister(2, -1);
-				delete[] name;
-				Increase_ProgramCounter();
-				return;
-			}
-			
-			int res = semTab->Signal(name);
-
-			if(res == -1)
-			{
-				DEBUG('a', "\n Khong ton tai ten semaphore nay!");
-				printf("\n Khong ton tai ten semaphore nay!");
-				machine->WriteRegister(2, -1);
-				delete[] name;
-				Increase_ProgramCounter();
-				return;				
-			}
-			
-			delete[] name;
-			machine->WriteRegister(2, res);
+			Exception_Signal();
 			Increase_ProgramCounter();
 			return;
-		}
-		case SC_Sum:
-		{
-			// int Sum(int a, int b)
-			int a = machine->ReadRegister(4);
-			int b = machine->ReadRegister(5);
-			int sum = a + b;
-			machine->WriteRegister(2, sum);
-			Increase_ProgramCounter();
-			return;
-		}
+		
 		default:
-			break;
+			return;
 		}
 	}
 }
