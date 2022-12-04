@@ -51,38 +51,33 @@ class FileSystem {
   public:
   	
   	//Khai bao 2 bien 
-  	OpenFile** openf; //De kiem tra xem file co dang mo khong
-	int index;
+  	OpenFile** openFileTable; //De kiem tra xem file co dang mo khong
+		int index;
 	
 	//Dinh nghia lai ham khoi tao cua FileSystem
     	FileSystem(bool format) {
-		openf = new OpenFile*[15];
+		openFileTable = new OpenFile*[10];
 		index = 0;
-		for (int i = 0; i < 15; ++i)
+		for (int i = 0; i < 10; ++i)
 		{
-			openf[i] = NULL;
+			openFileTable[i] = NULL;
 		}
 		this->Create("stdin", 0);
 		this->Create("stdout", 0);
-		openf[index++] = this->Open("stdin", 2);
-		openf[index++] = this->Open("stdout", 3);    
+		openFileTable[index++] = this->Open("stdin", 2);
+		openFileTable[index++] = this->Open("stdout", 3);    
 	}
 	
-	//Ham huy doi tuong FileSystem
 	~FileSystem()
 	{
 		for (int i = 0; i < 15; ++i)
 		{
-			if (openf[i] != NULL) delete openf[i];
+			if (openFileTable[i] != NULL) delete openFileTable[i];
 		}
-		delete[] openf;
+		delete[] openFileTable;
 	}
 
-
-
-
-	//Default method
-    	bool Create(char *name, int initialSize) { 
+	bool Create(char *name, int initialSize) { 
 		int fileDescriptor = OpenForWrite(name);
 
 		if (fileDescriptor == -1) return FALSE;
@@ -90,30 +85,28 @@ class FileSystem {
 		return TRUE; 
 	}
 	
-	//Default method
-    	OpenFile* Open(char *name) {
-	  	int fileDescriptor = OpenForReadWrite(name, FALSE);
-
-	  	if (fileDescriptor == -1) return NULL;
-	  	return new OpenFile(fileDescriptor);
-   	}
-
-	//Overload lai ham Open de mo file voi 2 type khac nhau 
-	OpenFile* Open(char *name, int type) {
+	OpenFile* Open(char *name) {
 		int fileDescriptor = OpenForReadWrite(name, FALSE);
 
 		if (fileDescriptor == -1) return NULL;
-		//index++;
-		return new OpenFile(fileDescriptor, type);
+		return new OpenFile(fileDescriptor);
+	}
+
+	OpenFile* Open(char *name, int type) {
+		int fileDescriptor = OpenForReadWrite(name, FALSE);
+
+		if (fileDescriptor != -1) {
+			return new OpenFile(fileDescriptor, type);
+		}
+		return NULL;
 	}
 
 	
-	//Ham tim slot trong
 	int FindFreeSlot()
 	{
 		for(int i = 2; i < 15; i++)
 		{
-			if(openf[i] == NULL) return i;		
+			if(openFileTable[i] == NULL) return i;		
 		}
 		return -1;
 	}
@@ -130,7 +123,7 @@ class FileSystem {
   public:
   	
   	//Khai bao
-  	OpenFile** openf;
+  	OpenFile** openFileTable;
 	int index;
 	
     FileSystem(bool format);		// Initialize the file system.

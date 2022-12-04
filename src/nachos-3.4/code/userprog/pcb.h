@@ -2,12 +2,6 @@
 //  Process Control Block
 //	Save all information to control the process
 // All rights reserved.
-/////////////////////////////////////////////////
-// 	DH KHTN - DHQG TPHCM			/
-// 	1512034 Nguyen Dang Binh		/
-// 	1512042 Nguyen Thanh Chung		/
-// 	1512123 Hoang Ngoc Duc			/
-/////////////////////////////////////////////////
 
 #ifndef PCB_H
 #define PCB_H
@@ -19,25 +13,25 @@
 class PCB
 {
 private:
-    Semaphore* joinsem;         // semaphore cho quá trình join
-    Semaphore* exitsem;         // semaphore cho quá trình exit
-    Semaphore* multex;          // semaphore cho quá trình truy xuất đọc quyền  
+    Semaphore* joinsem;         
+    Semaphore* exitsem;         
+    Semaphore* multex;          // semaphore dành cho truy xuất độc quyền  
 
     int exitcode;		
     int numwait;                // số tiến trình đã join
 
-    char FileName[32];          // Ten cua tien trinh
+    char FileName[255];          // Tên tiến trình
 
-    Thread* thread;             // Tien trinh cua chuong trinh
+    Thread* thread;             
 public:
-    int parentID;               // ID cua tien trinh cha
+    int parentID;               // ID tiến trình cha
     
-    char boolBG;                // Kiem tra neu la tien trinh nen
+    char boolBG;                
     
-    PCB(int = 0);               // Contructor
-    ~PCB();                     // Destructor
+    PCB(int = 0);               
+    ~PCB();                     
 
-    int Exec(char*,int);        // Tao mot thread moi
+    int Exec(char*,int);        
     int GetID();                // Trả về ProcessID của tiến trình gọi thực hiện
     int GetNumWait();           // Trả về số lượng tiến trình chờ
 
@@ -55,8 +49,8 @@ public:
     void SetExitCode(int);      // Đặt exitcode của tiến trình
     int GetExitCode();          // Trả về exitcode
 
-    void SetFileName(char*);    // Set ten tien trinh
-    char* GetFileName();        // Tra ve ten tien trinh
+    void SetFileName(char*);    // Hàm set tên cho tiến trình
+    char* GetFileName();        // Hàm get tên tiến trình
 
 };
 

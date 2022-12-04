@@ -43,14 +43,6 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
-
-/////////////////////////////////////////////////
-// 	DH KHTN - DHQG TPHCM			/
-// 	1512034 Nguyen Dang Binh		/
-// 	1512042 Nguyen Thanh Chung		/
-// 	1512123 Hoang Ngoc Duc			/
-/////////////////////////////////////////////////
-
 #include "copyright.h"
 
 #include "disk.h"
@@ -150,14 +142,14 @@ FileSystem::FileSystem(bool format)
     }
     
     //Cai dat 
-    openf = new OpenFile*[15];
+    openFileTable = new OpenFile*[15];
 	index = 0;
 	for (int i = 0; i < 15; ++i)
 	{
-		openf[i] = NULL;
+		openFileTable[i] = NULL;
 	}
-	openf[index++] = this->Open("stdin", 2);
-	openf[index++] = this->Open("stdout", 3);
+	openFileTable[index++] = this->Open("stdin", 2);
+	openFileTable[index++] = this->Open("stdout", 3);
 	this->Create("stdin", 0);
 	this->Create("stdout", 0);
 }
@@ -258,7 +250,7 @@ OpenFile* FileSystem::Open(char *name)
     delete directory;
     //return openFile;				// return NULL if not found
 	index++;
-	return openf[index - 1];				// return NULL if not found
+	return openFileTable[index - 1];				// return NULL if not found
 }
 
 OpenFile* FileSystem::Open(char *name, int type)
@@ -272,10 +264,10 @@ OpenFile* FileSystem::Open(char *name, int type)
 	directory->FetchFrom(directoryFile);
 	sector = directory->Find(name);
 	if (sector >= 0)
-		openf[freeSlot] = new OpenFile(sector, type);	// name was found in directory 
+		openFileTable[freeSlot] = new OpenFile(sector, type);	// name was found in directory 
 	delete directory;
 	//index++;
-	return openf[freeSlot];				// return NULL if not found
+	return openFileTable[freeSlot];				// return NULL if not found
 }
 
 //Ham tim slot trong
@@ -283,7 +275,7 @@ int FileSystem::FindFreeSlot()
 {
 	for(int i = 2; i < 15; i++)
 	{
-		if(openf[i] == NULL) return i;		
+		if(openFileTable[i] == NULL) return i;		
 	}
 	return -1;
 }

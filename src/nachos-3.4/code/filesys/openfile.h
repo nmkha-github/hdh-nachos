@@ -17,15 +17,6 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
-
-/////////////////////////////////////////////////
-// 	DH KHTN - DHQG TPHCM			/
-// 	1512034 Nguyen Dang Binh		/
-// 	1512042 Nguyen Thanh Chung		/
-// 	1512123 Hoang Ngoc Duc			/
-/////////////////////////////////////////////////
-
-
 #ifndef OPENFILE_H
 #define OPENFILE_H
 
@@ -37,13 +28,10 @@
 					// See definitions listed under #else
 class OpenFile {
   public:
-  	//Khai bao bien type
   	int type;
-  	
-	//Ham dung cua class OpenFile
-	OpenFile(int f) { file = f; currentOffset = 0; type = 0; }	// mo file mac dinh
-	OpenFile(int f, int t) { file = f; currentOffset = 0; type = t; }	// mo file voi tham so type
-    	~OpenFile() { Close(file); }			// close the file
+		
+	OpenFile(int f) { file = f; currentOffset = 0; type = 0; }	
+	OpenFile(int f, int t) { file = f; currentOffset = 0; type = t; }	
 
   	int Seek(int pos) {
 		Lseek(file, pos, 0);

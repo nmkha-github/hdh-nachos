@@ -5,13 +5,6 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
-/////////////////////////////////////////////////
-// 	DH KHTN - DHQG TPHCM			/
-// 	1512034 Nguyen Dang Binh		/
-// 	1512042 Nguyen Thanh Chung		/
-// 	1512123 Hoang Ngoc Duc			/
-/////////////////////////////////////////////////
-
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
@@ -47,9 +40,9 @@ extern Machine* machine;	// user program memory and registers
 extern SynchConsole* gSynchConsole;
 
 extern Semaphore *addrLock;	// semaphore
-extern BitMap *gPhysPageBitMap;	// quan ly cac frame
-extern PTable *pTab;		// quan ly bang tien trinh
-extern STable *semTab;		// quan ly semaphore
+extern BitMap *gPhysPageBitMap;	// dùng để quản lí frame
+extern PTable *pTab;		// dùng để quản lí tiến trình
+extern STable *semTab;		// dùng để quản lí semaphore
 #endif
 
 #ifdef FILESYS_NEEDED 		// FILESYS or FILESYS_STUB 

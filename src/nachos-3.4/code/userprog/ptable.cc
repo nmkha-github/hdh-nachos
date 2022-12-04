@@ -1,29 +1,20 @@
 #include "ptable.h"
 #include "system.h"
 #include "openfile.h"
-/////////////////////////////////////////////////
-// 	DH KHTN - DHQG TPHCM			/
-// 	1512034 Nguyen Dang Binh		/
-// 	1512042 Nguyen Thanh Chung		/
-// 	1512123 Hoang Ngoc Duc			/
-/////////////////////////////////////////////////
-
-
-#define For(i,a,b) for (int i = (a); i < b; ++i)
 
 PTable::PTable(int size)
 {
 
-    if (size < 0)
-        return;
+	if (size < 0)
+			return;
 
-    psize = size;
-    bm = new BitMap(size);
-    bmsem = new Semaphore("bmsem",1);
+	psize = size;
+	bm = new BitMap(size);
+	bmsem = new Semaphore("bmsem",1);
 
-    For(i,0,MAX_PROCESS){
+	for (int i = 0; i < MAX_PROCESS; ++i){
 		pcb[i] = 0;
-    }
+	}
 
 	bm->Mark(0);
 
@@ -34,13 +25,13 @@ PTable::PTable(int size)
 
 PTable::~PTable()
 {
-    if( bm != 0 )
+  if( bm != 0 )
 	delete bm;
     
-    For(i,0,psize){
+	for (int i = 0; i < psize; ++i){
 		if(pcb[i] != 0)
 			delete pcb[i];
-    }
+	}
 		
 	if( bmsem != 0)
 		delete bmsem;
@@ -48,31 +39,27 @@ PTable::~PTable()
 
 int PTable::ExecUpdate(char* name)
 {
-
-
-        //Gọi mutex->P(); để giúp tránh tình trạng nạp 2 tiến trình cùng 1 lúc.
+	//Gọi mutex->P(); để giúp tránh tình trạng nạp 2 tiến trình cùng 1 lúc.
 	bmsem->P();
 	
-	// Kiểm tra tính hợp lệ của chương trình “name”.
-        // Kiểm tra sự tồn tại của chương trình “name” bằng cách gọi phương thức Open của lớp fileSystem.
+  // Tên chương trình không được rỗng
 	if(name == NULL)
 	{
-		printf("\nPTable::Exec : Can't not execute name is NULL.\n");
+		printf("\nTen chuong trinh khong duoc rong\n");
 		bmsem->V();
 		return -1;
 	}
-	// So sánh tên chương trình và tên của currentThread để chắc chắn rằng chương trình này không gọi thực thi chính nó.
+
+	//Kiểm tra chương trình này không gọi thực thi chính nó.
 	if( strcmp(name,"./test/scheduler") == 0 || strcmp(name,currentThread->getName()) == 0 )
 	{
-		printf("\nPTable::Exec : Can't not execute itself.\n");		
+		printf("\nKhong the thuc thi\n");		
 		bmsem->V();
 		return -1;
 	}
 
-	// Tìm slot trống trong bảng Ptable.
 	int index = this->GetFreeSlot();
 
-    // Check if have free slot
 	if(index < 0)
 	{
 		printf("\nPTable::Exec :There is no free slot.\n");

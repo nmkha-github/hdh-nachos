@@ -51,21 +51,21 @@ class FileSystem {
   public:
   	
   	//Khai bao 2 bien 
-  	OpenFile** openf; //De kiem tra xem file co dang mo khong
+  	OpenFile** openFileTable; //De kiem tra xem file co dang mo khong
 	int index;
 	
 	//Dinh nghia lai ham khoi tao cua FileSystem
     	FileSystem(bool format) {
-		openf = new OpenFile*[15];
+		openFileTable = new OpenFile*[15];
 		index = 0;
 		for (int i = 0; i < 15; ++i)
 		{
-			openf[i] = NULL;
+			openFileTable[i] = NULL;
 		}
 		this->Create("stdin", 0);
 		this->Create("stdout", 0);
-		openf[index++] = this->Open("stdin", 2);
-		openf[index++] = this->Open("stdout", 3);    
+		openFileTable[index++] = this->Open("stdin", 2);
+		openFileTable[index++] = this->Open("stdout", 3);    
 	}
 	
 	//Ham huy doi tuong FileSystem
@@ -73,9 +73,9 @@ class FileSystem {
 	{
 		for (int i = 0; i < 15; ++i)
 		{
-			if (openf[i] != NULL) delete openf[i];
+			if (openFileTable[i] != NULL) delete openFileTable[i];
 		}
-		delete[] openf;
+		delete[] openFileTable;
 	}
 
 
@@ -113,7 +113,7 @@ class FileSystem {
 	{
 		for(int i = 2; i < 10; i++)
 		{
-			if(openf[i] == NULL) return i;		
+			if(openFileTable[i] == NULL) return i;		
 		}
 		return -1;
 	}
@@ -130,7 +130,7 @@ class FileSystem {
   public:
   	
   	//Khai bao
-  	OpenFile** openf;
+  	OpenFile** openFileTable;
 	int index;
 	
     FileSystem(bool format);		// Initialize the file system.
