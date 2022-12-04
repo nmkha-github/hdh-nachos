@@ -377,9 +377,9 @@ void Exception_Read()
         return;
     }
 
-    firstPositionInFile = fileSystem->openFileTable[id]->currentPos();
+    firstPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
     fileSystem->openFileTable[id]->Read(buffer, charCount);
-    lastPositionInFile = fileSystem->openFileTable[id]->currentPos();
+    lastPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
 
     //Số byte thực sự = lastPositionInFile - firstPositionInFile
     int size = lastPositionInFile - firstPositionInFile;
@@ -435,9 +435,9 @@ void Exception_Write()
         return;
     }
 
-    firstPositionInFile = fileSystem->openFileTable[id]->currentPos();
+    firstPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
     fileSystem->openFileTable[id]->Write(buffer, charCount);
-    lastPositionInFile = fileSystem->openFileTable[id]->currentPos();
+    lastPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
 
     //Số byte thực sự = lastPositionInFile - firstPositionInFile
     int size = lastPositionInFile - firstPositionInFile;
