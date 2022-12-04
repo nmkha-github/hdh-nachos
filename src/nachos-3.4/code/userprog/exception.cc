@@ -500,7 +500,11 @@ void Exception_Exec()
 
 void Exception_Join()
 {
-
+	int id = machine->ReadRegister(4);
+		
+	int res = pTab->JoinUpdate(id);
+	
+	machine->WriteRegister(2, res);
 }
 
 void Exception_Exit()
@@ -616,55 +620,14 @@ void ExceptionHandler(ExceptionType which)
 		return;
 	
 	case SC_Exec:
-	{
-		// Input: vi tri int
-		// Output: Fail return -1, Success: return id cua thread dang chay
-		// SpaceId Exec(char *name);
-		int virtAddr;
-		virtAddr = machine->ReadRegister(4);	// doc dia chi ten chuong trinh tu thanh ghi r4
-		char* name;
-		name = User2System(virtAddr, MaxFileLength + 1); // Lay ten chuong trinh, nap vao kernel
-
-		if(name == NULL)
-		{
-			DEBUG('a', "\n Not enough memory in System");
-			printf("\n Not enough memory in System");
-			machine->WriteRegister(2, -1);
-			//IncreasePC();
-			return;
-		}
-		OpenFile *oFile = fileSystem->Open(name);
-		if (oFile == NULL)
-		{
-			printf("\nExec:: Can't open this file.");
-			machine->WriteRegister(2,-1);
-			IncreasePC();
-			return;
-		}
-
-		delete oFile;
-
-		// Return child process id
-		int id = pTab->ExecUpdate(name); 
-		machine->WriteRegister(2,id);
-
-		delete[] name;	
-		IncreasePC();
+		Exception_Exec();
+		Increase_ProgramCounter();
 		return;
-	}
-	case SC_Join:
-	{       
-		// int Join(SpaceId id)
-		// Input: id dia chi cua thread
-		// Output: 
-		int id = machine->ReadRegister(4);
-		
-		int res = pTab->JoinUpdate(id);
-		
-		machine->WriteRegister(2, res);
-		IncreasePC();
+	case SC_Join:       
+		Exception_Join();
+		Increase_ProgramCounter();
 		return;
-	}
+
 	case SC_Exit:
 	{
 		//void Exit(int status);
@@ -673,7 +636,7 @@ void ExceptionHandler(ExceptionType which)
 
 		if(exitStatus != 0)
 		{
-			IncreasePC();
+			Increase_ProgramCounter();
 			return;
 			
 		}			
@@ -683,7 +646,7 @@ void ExceptionHandler(ExceptionType which)
 
 		currentThread->FreeSpace();
 		currentThread->Finish();
-		IncreasePC();
+		Increase_ProgramCounter();
 		return; 
 			
 	}
@@ -700,7 +663,7 @@ void ExceptionHandler(ExceptionType which)
 			printf("\n Not enough memory in System");
 			machine->WriteRegister(2, -1);
 			delete[] name;
-			IncreasePC();
+			Increase_ProgramCounter();
 			return;
 		}
 		
@@ -712,13 +675,13 @@ void ExceptionHandler(ExceptionType which)
 			printf("\n Khong the khoi tao semaphore");
 			machine->WriteRegister(2, -1);
 			delete[] name;
-			IncreasePC();
+			Increase_ProgramCounter();
 			return;				
 		}
 		
 		delete[] name;
 		machine->WriteRegister(2, res);
-		IncreasePC();
+		Increase_ProgramCounter();
 		return;
 	}
 
@@ -734,7 +697,7 @@ void ExceptionHandler(ExceptionType which)
 			printf("\n Not enough memory in System");
 			machine->WriteRegister(2, -1);
 			delete[] name;
-			IncreasePC();
+			Increase_ProgramCounter();
 			return;
 		}
 		
@@ -746,13 +709,13 @@ void ExceptionHandler(ExceptionType which)
 			printf("\n Khong ton tai ten semaphore nay!");
 			machine->WriteRegister(2, -1);
 			delete[] name;
-			IncreasePC();
+			Increase_ProgramCounter();
 			return;				
 		}
 		
 		delete[] name;
 		machine->WriteRegister(2, res);
-		IncreasePC();
+		Increase_ProgramCounter();
 		return;
 	}
 	case SC_Signal:		
@@ -767,7 +730,7 @@ void ExceptionHandler(ExceptionType which)
 			printf("\n Not enough memory in System");
 			machine->WriteRegister(2, -1);
 			delete[] name;
-			IncreasePC();
+			Increase_ProgramCounter();
 			return;
 		}
 		
@@ -779,13 +742,13 @@ void ExceptionHandler(ExceptionType which)
 			printf("\n Khong ton tai ten semaphore nay!");
 			machine->WriteRegister(2, -1);
 			delete[] name;
-			IncreasePC();
+			Increase_ProgramCounter();
 			return;				
 		}
 		
 		delete[] name;
 		machine->WriteRegister(2, res);
-		IncreasePC();
+		Increase_ProgramCounter();
 		return;
 	}
 	case SC_Sum:
@@ -795,7 +758,7 @@ void ExceptionHandler(ExceptionType which)
 		int b = machine->ReadRegister(5);
 		int sum = a + b;
 		machine->WriteRegister(2, sum);
-		IncreasePC();
+		Increase_ProgramCounter();
 		return;
 	}
 	default:
