@@ -133,9 +133,3 @@ checkfile.o: checkfile.c
 checkfile: checkfile.o start.o
 	$(LD) $(LDFLAGS) start.o checkfile.o -o checkfile.coff
 	../bin/coff2noff checkfile.coff checkfile
-
-checksum.o: checksum.c
-	$(CC) $(CFLAGS) -c checksum.c
-checksum: checksum.o start.o
-	$(LD) $(LDFLAGS) start.o checksum.o -o checksum.coff
-	../bin/coff2noff checksum.coff checksum
