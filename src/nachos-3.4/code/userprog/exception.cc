@@ -514,7 +514,7 @@ void Exception_Exit()
 // Ham xu ly ngoai le runtime Exception va system call
 void ExceptionHandler(ExceptionType which)
 {
-    int type = machine->ReadRegister(2);
+  int type = machine->ReadRegister(2);
 	switch (which) {
 	case NoException:
 		return;
@@ -556,214 +556,213 @@ void ExceptionHandler(ExceptionType which)
 			return;
 
 	case SyscallException:
-	switch (type){
+		switch (type){
 
-	case SC_Halt:
-		DEBUG('a', "\nShutdown, initiated by user program. ");
-		printf("\nShutdown, initiated by user program. ");
-		interrupt->Halt();
-		return;
+		case SC_Halt:
+			DEBUG('a', "\nShutdown, initiated by user program. ");
+			printf("\nShutdown, initiated by user program. ");
+			interrupt->Halt();
+			return;
 
-	case SC_ReadInt:
-		Exception_ReadInt();
-		Increase_ProgramCounter();
-		return;		
+		case SC_ReadInt:
+			Exception_ReadInt();
+			Increase_ProgramCounter();
+			return;		
 
-	case SC_PrintInt:
-		Exception_PrintInt();
-		Increase_ProgramCounter();
-		return;	
+		case SC_PrintInt:
+			Exception_PrintInt();
+			Increase_ProgramCounter();
+			return;	
 
-	case SC_ReadChar:
-		Exception_ReadChar();
-		Increase_ProgramCounter();
-		return;	
+		case SC_ReadChar:
+			Exception_ReadChar();
+			Increase_ProgramCounter();
+			return;	
 
-	case SC_PrintChar:
-		Exception_PrintChar();
-		Increase_ProgramCounter();
-		return;	
+		case SC_PrintChar:
+			Exception_PrintChar();
+			Increase_ProgramCounter();
+			return;	
 
-	case SC_ReadString:
-		Exception_ReadString();
-		Increase_ProgramCounter();
-		return;
-
-	case SC_PrintString:
-		Exception_PrintString();
-		Increase_ProgramCounter();
-		return;
-
-	case SC_CreateFile:
-		Exception_CreateFile();
-		Increase_ProgramCounter();
-		return;
-
-	case SC_Open:
-		Exception_Open();
-		Increase_ProgramCounter();
-		return;
-
-	case SC_Close:
-		Exception_Close();
-		Increase_ProgramCounter();
-		return;
-
-	case SC_Read:
-		Exception_Read();
-		Increase_ProgramCounter();
-		return;
-
-	case SC_Write:
-		Exception_Write();
-		Increase_ProgramCounter();
-		return;
-	
-	case SC_Exec:
-		Exception_Exec();
-		Increase_ProgramCounter();
-		return;
-	case SC_Join:       
-		Exception_Join();
-		Increase_ProgramCounter();
-		return;
-
-	case SC_Exit:
-	{
-		//void Exit(int status);
-		// Input: status code
-		int exitStatus = machine->ReadRegister(4);
-
-		if(exitStatus != 0)
-		{
+		case SC_ReadString:
+			Exception_ReadString();
 			Increase_ProgramCounter();
 			return;
+
+		case SC_PrintString:
+			Exception_PrintString();
+			Increase_ProgramCounter();
+			return;
+
+		case SC_CreateFile:
+			Exception_CreateFile();
+			Increase_ProgramCounter();
+			return;
+
+		case SC_Open:
+			Exception_Open();
+			Increase_ProgramCounter();
+			return;
+
+		case SC_Close:
+			Exception_Close();
+			Increase_ProgramCounter();
+			return;
+
+		case SC_Read:
+			Exception_Read();
+			Increase_ProgramCounter();
+			return;
+
+		case SC_Write:
+			Exception_Write();
+			Increase_ProgramCounter();
+			return;
+		
+		case SC_Exec:
+			Exception_Exec();
+			Increase_ProgramCounter();
+			return;
+		case SC_Join:       
+			Exception_Join();
+			Increase_ProgramCounter();
+			return;
+
+		case SC_Exit:
+		{
+			//void Exit(int status);
+			// Input: status code
+			int exitStatus = machine->ReadRegister(4);
+
+			if(exitStatus != 0)
+			{
+				Increase_ProgramCounter();
+				return;
+				
+			}			
 			
-		}			
-		
-		int res = pTab->ExitUpdate(exitStatus);
-		//machine->WriteRegister(2, res);
+			int res = pTab->ExitUpdate(exitStatus);
+			//machine->WriteRegister(2, res);
 
-		currentThread->FreeSpace();
-		currentThread->Finish();
-		Increase_ProgramCounter();
-		return; 
+			currentThread->FreeSpace();
+			currentThread->Finish();
+			Increase_ProgramCounter();
+			return; 
+				
+		}
+		case SC_CreateSemaphore:
+		{
+			// int CreateSemaphore(char* name, int semval).
+			int virtAddr = machine->ReadRegister(4);
+			int semval = machine->ReadRegister(5);
+
+			char *name = User2System(virtAddr, MaxFileLength + 1);
+			if(name == NULL)
+			{
+				DEBUG('a', "\n Not enough memory in System");
+				printf("\n Not enough memory in System");
+				machine->WriteRegister(2, -1);
+				delete[] name;
+				Increase_ProgramCounter();
+				return;
+			}
 			
-	}
-	case SC_CreateSemaphore:
-	{
-		// int CreateSemaphore(char* name, int semval).
-		int virtAddr = machine->ReadRegister(4);
-		int semval = machine->ReadRegister(5);
+			int res = semTab->Create(name, semval);
 
-		char *name = User2System(virtAddr, MaxFileLength + 1);
-		if(name == NULL)
-		{
-			DEBUG('a', "\n Not enough memory in System");
-			printf("\n Not enough memory in System");
-			machine->WriteRegister(2, -1);
+			if(res == -1)
+			{
+				DEBUG('a', "\n Khong the khoi tao semaphore");
+				printf("\n Khong the khoi tao semaphore");
+				machine->WriteRegister(2, -1);
+				delete[] name;
+				Increase_ProgramCounter();
+				return;				
+			}
+			
 			delete[] name;
+			machine->WriteRegister(2, res);
 			Increase_ProgramCounter();
 			return;
 		}
-		
-		int res = semTab->Create(name, semval);
 
-		if(res == -1)
+		case SC_Wait:			
 		{
-			DEBUG('a', "\n Khong the khoi tao semaphore");
-			printf("\n Khong the khoi tao semaphore");
-			machine->WriteRegister(2, -1);
-			delete[] name;
-			Increase_ProgramCounter();
-			return;				
-		}
-		
-		delete[] name;
-		machine->WriteRegister(2, res);
-		Increase_ProgramCounter();
-		return;
-	}
+			// int Wait(char* name)
+			int virtAddr = machine->ReadRegister(4);
 
-	case SC_Wait:			
-	{
-		// int Wait(char* name)
-		int virtAddr = machine->ReadRegister(4);
+			char *name = User2System(virtAddr, MaxFileLength + 1);
+			if(name == NULL)
+			{
+				DEBUG('a', "\n Not enough memory in System");
+				printf("\n Not enough memory in System");
+				machine->WriteRegister(2, -1);
+				delete[] name;
+				Increase_ProgramCounter();
+				return;
+			}
+			
+			int res = semTab->Wait(name);
 
-		char *name = User2System(virtAddr, MaxFileLength + 1);
-		if(name == NULL)
-		{
-			DEBUG('a', "\n Not enough memory in System");
-			printf("\n Not enough memory in System");
-			machine->WriteRegister(2, -1);
+			if(res == -1)
+			{
+				DEBUG('a', "\n Khong ton tai ten semaphore nay!");
+				printf("\n Khong ton tai ten semaphore nay!");
+				machine->WriteRegister(2, -1);
+				delete[] name;
+				Increase_ProgramCounter();
+				return;				
+			}
+			
 			delete[] name;
-			Increase_ProgramCounter();
-			return;
-		}
-		
-		int res = semTab->Wait(name);
-
-		if(res == -1)
-		{
-			DEBUG('a', "\n Khong ton tai ten semaphore nay!");
-			printf("\n Khong ton tai ten semaphore nay!");
-			machine->WriteRegister(2, -1);
-			delete[] name;
-			Increase_ProgramCounter();
-			return;				
-		}
-		
-		delete[] name;
-		machine->WriteRegister(2, res);
-		Increase_ProgramCounter();
-		return;
-	}
-	case SC_Signal:		
-	{
-		// int Signal(char* name)
-		int virtAddr = machine->ReadRegister(4);
-
-		char *name = User2System(virtAddr, MaxFileLength + 1);
-		if(name == NULL)
-		{
-			DEBUG('a', "\n Not enough memory in System");
-			printf("\n Not enough memory in System");
-			machine->WriteRegister(2, -1);
-			delete[] name;
+			machine->WriteRegister(2, res);
 			Increase_ProgramCounter();
 			return;
 		}
-		
-		int res = semTab->Signal(name);
-
-		if(res == -1)
+		case SC_Signal:		
 		{
-			DEBUG('a', "\n Khong ton tai ten semaphore nay!");
-			printf("\n Khong ton tai ten semaphore nay!");
-			machine->WriteRegister(2, -1);
+			// int Signal(char* name)
+			int virtAddr = machine->ReadRegister(4);
+
+			char *name = User2System(virtAddr, MaxFileLength + 1);
+			if(name == NULL)
+			{
+				DEBUG('a', "\n Not enough memory in System");
+				printf("\n Not enough memory in System");
+				machine->WriteRegister(2, -1);
+				delete[] name;
+				Increase_ProgramCounter();
+				return;
+			}
+			
+			int res = semTab->Signal(name);
+
+			if(res == -1)
+			{
+				DEBUG('a', "\n Khong ton tai ten semaphore nay!");
+				printf("\n Khong ton tai ten semaphore nay!");
+				machine->WriteRegister(2, -1);
+				delete[] name;
+				Increase_ProgramCounter();
+				return;				
+			}
+			
 			delete[] name;
+			machine->WriteRegister(2, res);
 			Increase_ProgramCounter();
-			return;				
+			return;
 		}
-		
-		delete[] name;
-		machine->WriteRegister(2, res);
-		Increase_ProgramCounter();
-		return;
-	}
-	case SC_Sum:
-	{
-		// int Sum(int a, int b)
-		int a = machine->ReadRegister(4);
-		int b = machine->ReadRegister(5);
-		int sum = a + b;
-		machine->WriteRegister(2, sum);
-		Increase_ProgramCounter();
-		return;
-	}
-	default:
-		break;
-	
+		case SC_Sum:
+		{
+			// int Sum(int a, int b)
+			int a = machine->ReadRegister(4);
+			int b = machine->ReadRegister(5);
+			int sum = a + b;
+			machine->WriteRegister(2, sum);
+			Increase_ProgramCounter();
+			return;
+		}
+		default:
+			break;
+		}
 	}
 }
-
