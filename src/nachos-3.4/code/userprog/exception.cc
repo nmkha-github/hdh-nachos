@@ -729,5 +729,6 @@ void ExceptionHandler(ExceptionType which)
 		default:
 			break;
 		}
+		break;
 	}
 }

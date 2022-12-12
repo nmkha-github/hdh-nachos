@@ -7,17 +7,15 @@
 
 int main()
 {
-	// ------------------------ Khai bao cac bien dung trong chuong trinh ---------------------------------------
-	int fileOut;			// File output.txt
-	int fileSinhVien; // File tam, truyen tham so tu main cho sinhvien
+	int fileOut;			// id File output.txt
+	int fileSinhVien; // id file trung gian
 
-	int flag;		// Ghi nhan ket qua cac ham thanh cong hay that bai
-	int stop;		// Flag dung chuong trinh khi doc den cuoi file
+	int flag;
+	int stop;
 	char V[10]; // Dung tich binh nuoc (chuoi)
 	int len;		// Do dai cua chuoi V
-	char c[1];	// Dung de doc ghi file
+	char c[1];
 
-	// ------------------------ Khoi tao file, neu khong thanh cong thi dung chuong trinh ------------------------
 	fileSinhVien = Open("./test/sinhvien.txt", 1);
 	if (fileSinhVien == -1)
 	{
@@ -47,7 +45,6 @@ int main()
 		}
 	} while (flag != -2);
 
-	// ------------------------ Phan than chuong trinh: lay dung tich tung binh nuoc, dat vao voi nuoc -----------
 	stop = 0;
 	do
 	{
@@ -77,8 +74,6 @@ int main()
 
 		// Ghi dung tich vao cuoi file output.txt
 		Wait("voinuoc");
-		// ====== Critical Section START ======
-		// Seek: di chuyen toi cuoi file output.txt
 		do
 		{
 			flag = Read(c, 1, fileOut);
@@ -100,7 +95,6 @@ int main()
 			Close(fileOut);
 			Exit(-1);
 		}
-		// ====== Critical Section END ========
 		Signal("sinhvien");
 	} while (!stop);
 
