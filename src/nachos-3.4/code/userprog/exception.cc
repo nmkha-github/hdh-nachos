@@ -288,15 +288,15 @@ void Exception_Open()
 	switch (type)
 	{
 	case 0:
-		fileSystem->openFileTable[freeSlot] = fileSystem->Open(filename, type);
-		if (fileSystem->openFileTable[freeSlot] != NULL)
+		fileSystem->openf[freeSlot] = fileSystem->Open(filename, type);
+		if (fileSystem->openf[freeSlot] != NULL)
 		{
 			machine->WriteRegister(2, freeSlot); // trả về vị trí còn trống
 		}
 		break;
 	case 1:
-		fileSystem->openFileTable[freeSlot] = fileSystem->Open(filename, type);
-		if (fileSystem->openFileTable[freeSlot] != NULL) // Mo file thanh cong
+		fileSystem->openf[freeSlot] = fileSystem->Open(filename, type);
+		if (fileSystem->openf[freeSlot] != NULL) // Mo file thanh cong
 		{
 			machine->WriteRegister(2, freeSlot); // trả về vị trí còn trống
 		}
@@ -319,10 +319,10 @@ void Exception_Close()
 	// Chỉ xử lí trong phạm vi bảng mô tả file
 	if (fileId >= 0 && fileId <= 10)
 	{
-		if (fileSystem->openFileTable[fileId])
+		if (fileSystem->openf[fileId])
 		{
 			machine->WriteRegister(2, 0); // Trả kết quả thành công
-			delete[] fileSystem->openFileTable[fileId];
+			delete[] fileSystem->openf[fileId];
 		}
 	}
 	machine->WriteRegister(2, -1); // Trả lỗi
@@ -352,27 +352,27 @@ void Exception_Read()
 	}
 
 	// Kiểm tra file tồn tại
-	if (fileSystem->openFileTable[id] == NULL)
+	if (fileSystem->openf[id] == NULL)
 	{
 		printf("\nFile khong ton tai.");
 		machine->WriteRegister(2, -1);
 		return;
 	}
 
-	if (fileSystem->openFileTable[id]->type == 3)
+	if (fileSystem->openf[id]->type == 3)
 	{
 		printf("\nKhong the read file stdout.");
 		machine->WriteRegister(2, -1);
 		return;
 	}
 
-	firstPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
+	firstPositionInFile = fileSystem->openf[id]->GetCurrentPos();
 	buffer = User2System(addr, charCount);
-	fileSystem->openFileTable[id]->Read(buffer, charCount);
-	lastPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
+	fileSystem->openf[id]->Read(buffer, charCount);
+	lastPositionInFile = fileSystem->openf[id]->GetCurrentPos();
 
 	// file stdin
-	if (fileSystem->openFileTable[id]->type == 2)
+	if (fileSystem->openf[id]->type == 2)
 	{
 		// Số byte thực sự đọc được
 		int size = gSynchConsole->Read(buffer, charCount);
@@ -423,30 +423,30 @@ void Exception_Write()
 	}
 
 	// Kiểm tra file tồn tại
-	if (fileSystem->openFileTable[id] == NULL)
+	if (fileSystem->openf[id] == NULL)
 	{
 		printf("\nFile khong ton tai.");
 		machine->WriteRegister(2, -1);
 		return;
 	}
 
-	if (fileSystem->openFileTable[id]->type == 1 || fileSystem->openFileTable[id]->type == 2)
+	if (fileSystem->openf[id]->type == 1 || fileSystem->openf[id]->type == 2)
 	{
 		printf("\nKhong the viet file stdin hoac file chi doc.");
 		machine->WriteRegister(2, -1);
 		return;
 	}
 
-	firstPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
+	firstPositionInFile = fileSystem->openf[id]->GetCurrentPos();
 	buffer = User2System(addr, charCount);
-	fileSystem->openFileTable[id]->Write(buffer, charCount);
-	lastPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
+	fileSystem->openf[id]->Write(buffer, charCount);
+	lastPositionInFile = fileSystem->openf[id]->GetCurrentPos();
 
 	// Số byte thực sự = lastPositionInFile - firstPositionInFile
 	int size = lastPositionInFile - firstPositionInFile;
 
 	// Xét với file chỉ đọc và viết thì trả về số byte thật sự
-	if (fileSystem->openFileTable[id]->type == 0)
+	if (fileSystem->openf[id]->type == 0)
 	{
 		if (size > 0)
 		{
@@ -457,7 +457,7 @@ void Exception_Write()
 	}
 
 	// Với file stdout
-	if (fileSystem->openFileTable[id]->type == 3)
+	if (fileSystem->openf[id]->type == 3)
 	{
 		int i;
 		for (i = 0; buffer[i] != '\0'; i++)
