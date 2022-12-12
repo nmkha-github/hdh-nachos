@@ -48,7 +48,6 @@ int main()
 	stop = 0;
 	do
 	{
-		// Doc dung tich tu file trung gian (het file thi dung)
 		len = 0;
 		while (1)
 		{
@@ -67,12 +66,11 @@ int main()
 			len++;
 		}
 		V[len] = ' ';
-		len++; // Chen them dau cach de phan cach cac so
+		len++;
 
 		if (flag == -2)
 			stop = 1;
 
-		// Ghi dung tich vao cuoi file output.txt
 		Wait("voinuoc");
 		do
 		{
@@ -86,9 +84,7 @@ int main()
 			}
 		} while (flag != -2);
 
-		// Ghi dung tich vao file
-		flag = Write(V, len, fileOut);
-		if (flag == -1)
+		if (Write(V, len, fileOut) == -1)
 		{
 			PrintString("\nWrite error in file sinhvien.txt!");
 			Close(fileSinhVien);
