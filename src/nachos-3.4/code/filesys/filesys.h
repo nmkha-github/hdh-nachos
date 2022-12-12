@@ -54,9 +54,9 @@ public:
 	// Dinh nghia lai ham khoi tao cua FileSystem
 	FileSystem(bool format)
 	{
-		openFileTable = new OpenFile *[10];
+		openFileTable = new OpenFile *[15];
 		index = 0;
-		for (int i = 0; i < 10; ++i)
+		for (int i = 0; i < 15; ++i)
 		{
 			openFileTable[i] = NULL;
 		}
@@ -68,7 +68,7 @@ public:
 
 	~FileSystem()
 	{
-		for (int i = 0; i < 10; ++i)
+		for (int i = 0; i < 15; ++i)
 		{
 			if (openFileTable[i] != NULL)
 				delete openFileTable[i];
@@ -108,7 +108,7 @@ public:
 
 	int FindFreeSlot()
 	{
-		for (int i = 2; i < 10; i++)
+		for (int i = 2; i < 15; i++)
 		{
 			if (openFileTable[i] == NULL)
 				return i;

@@ -146,9 +146,9 @@ FileSystem::FileSystem(bool format)
     }
 
     // Cai dat
-    openFileTable = new OpenFile *[10];
+    openFileTable = new OpenFile *[15];
     index = 0;
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 15; ++i)
     {
         openFileTable[i] = NULL;
     }
@@ -279,7 +279,7 @@ OpenFile *FileSystem::Open(char *name, int type)
 // Ham tim slot trong
 int FileSystem::FindFreeSlot()
 {
-    for (int i = 2; i < 10; i++)
+    for (int i = 2; i < 15; i++)
     {
         if (openFileTable[i] == NULL)
             return i;
