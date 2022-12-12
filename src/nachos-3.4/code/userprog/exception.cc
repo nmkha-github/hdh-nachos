@@ -268,46 +268,34 @@ void Exception_CreateFile()
 
 void Exception_Open()
 {
-	int addr;
-	int type;
+	int virtAddr = machine->ReadRegister(4);
+	int type = machine->ReadRegister(5);
 	char *filename;
-
-	// Lấy các tham số từ thanh ghi
-	addr = machine->ReadRegister(4);
-	type = machine->ReadRegister(5);
-	filename = User2System(addr, 255);
+	filename = User2System(virtAddr, 32);
 
 	int freeSlot = fileSystem->FindFreeSlot();
-
-	if (freeSlot == -1)
+	if (freeSlot != -1)
 	{
-		machine->WriteRegister(2, -1); // Trả lỗi về cho người dùng
+		if (type == 0 || type == 1)
+		{
+
+			if ((fileSystem->openf[freeSlot] = fileSystem->Open(filename, type)) != NULL) // Mo file thanh cong
+			{
+				machine->WriteRegister(2, freeSlot);
+			}
+		}
+		else if (type == 2)
+		{
+			machine->WriteRegister(2, 0);
+		}
+		else
+		{
+			machine->WriteRegister(2, 1);
+		}
+		delete[] filename;
 		return;
 	}
-
-	switch (type)
-	{
-	case 0:
-		fileSystem->openf[freeSlot] = fileSystem->Open(filename, type);
-		if (fileSystem->openf[freeSlot] != NULL)
-		{
-			machine->WriteRegister(2, freeSlot); // trả về vị trí còn trống
-		}
-		break;
-	case 1:
-		fileSystem->openf[freeSlot] = fileSystem->Open(filename, type);
-		if (fileSystem->openf[freeSlot] != NULL) // Mo file thanh cong
-		{
-			machine->WriteRegister(2, freeSlot); // trả về vị trí còn trống
-		}
-		break;
-	case 2:
-		machine->WriteRegister(2, 0);
-		break;
-	case 3:
-		machine->WriteRegister(2, 1);
-		break;
-	}
+	machine->WriteRegister(2, -1);
 
 	delete[] filename;
 }
