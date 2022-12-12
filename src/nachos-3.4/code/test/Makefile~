@@ -1,0 +1,154 @@
+# use normal make for this Makefile
+#
+# Makefile for building user programs to run on top of Nachos
+#
+# Several things to be aware of:
+#
+#    Nachos assumes that the location of the program startup routine (the
+# 	location the kernel jumps to when the program initially starts up)
+#       is at location 0.  This means: start.o must be the first .o passed 
+# 	to ld, in order for the routine "Start" to be loaded at location 0
+#
+
+# if you are cross-compiling, you need to point to the right executables
+# and change the flags to ld and the build procedure for as
+
+GCCDIR = ../../../gnu-decstation-ultrix/decstation-ultrix/2.95.3/
+
+LDFLAGS = -T script -N
+ASFLAGS = -mips2
+CPPFLAGS = $(INCDIR)
+
+# if you aren't cross-compiling:
+# GCCDIR =
+# LDFLAGS = -N -T 0
+# ASFLAGS =
+# CPPFLAGS = -P $(INCDIR)
+
+PATH = $(GCCDIR):/lib:/usr/bin:/bin
+
+CC = $(GCCDIR)gcc -B../../../gnu-decstation-ultrix/
+AS = $(GCCDIR)as
+LD = $(GCCDIR)ld
+
+CPP = gcc -E
+INCDIR =-I../userprog -I../threads
+CFLAGS = -G 0 -c $(INCDIR)
+
+all: halt shell matmult sort readprintint readprintchar readprintstring help ascii \
+	createfile testreadwrite testexec \
+	testwaitsignal testwaitsignal_A testwaitsignal_B \
+	main sinhvien voinuoc
+
+start.o: start.s ../userprog/syscall.h
+	$(CPP) $(CPPFLAGS) start.c > strt.s
+	$(AS) $(ASFLAGS) -o start.o strt.s
+	rm strt.s
+
+halt.o: halt.c
+	$(CC) $(CFLAGS) -c halt.c
+halt: halt.o start.o
+	$(LD) $(LDFLAGS) start.o halt.o -o halt.coff
+	../bin/coff2noff halt.coff halt
+
+shell.o: shell.c
+	$(CC) $(CFLAGS) -c shell.c
+shell: shell.o start.o
+	$(LD) $(LDFLAGS) start.o shell.o -o shell.coff
+	../bin/coff2noff shell.coff shell
+
+sort.o: sort.c
+	$(CC) $(CFLAGS) -c sort.c
+sort: sort.o start.o
+	$(LD) $(LDFLAGS) start.o sort.o -o sort.coff
+	../bin/coff2noff sort.coff sort
+
+matmult.o: matmult.c
+	$(CC) $(CFLAGS) -c matmult.c
+matmult: matmult.o start.o
+	$(LD) $(LDFLAGS) start.o matmult.o -o matmult.coff
+	../bin/coff2noff matmult.coff matmult
+
+readprintint.o: readprintint.c
+	$(CC) $(CFLAGS) -c readprintint.c
+readprintint: readprintint.o start.o
+	$(LD) $(LDFLAGS) start.o readprintint.o -o readprintint.coff
+	../bin/coff2noff readprintint.coff readprintint
+
+readprintchar.o: readprintchar.c
+	 	$(CC) $(CFLAGS) -c readprintchar.c
+readprintchar: readprintchar.o start.o
+		$(LD) $(LDFLAGS) start.o readprintchar.o -o readprintchar.coff
+		../bin/coff2noff readprintchar.coff readprintchar
+
+readprintstring.o: readprintstring.c
+	 	$(CC) $(CFLAGS) -c readprintstring.c
+readprintstring: readprintstring.o start.o
+		$(LD) $(LDFLAGS) start.o readprintstring.o -o readprintstring.coff
+		../bin/coff2noff readprintstring.coff readprintstring
+
+help.o: help.c
+	 	$(CC) $(CFLAGS) -c help.c
+help: help.o start.o
+		$(LD) $(LDFLAGS) start.o help.o -o help.coff
+		../bin/coff2noff help.coff help
+
+ascii.o: ascii.c
+	 	$(CC) $(CFLAGS) -c ascii.c
+ascii: ascii.o start.o
+		$(LD) $(LDFLAGS) start.o ascii.o -o ascii.coff
+		../bin/coff2noff ascii.coff ascii
+
+createfile.o: createfile.c
+	$(CC) $(CFLAGS) -c createfile.c
+createfile: createfile.o start.o
+	$(LD) $(LDFLAGS) start.o createfile.o -o createfile.coff
+	../bin/coff2noff createfile.coff createfile
+	
+testreadwrite.o: testreadwrite.c
+	$(CC) $(CFLAGS) -c testreadwrite.c
+testreadwrite: testreadwrite.o start.o
+	$(LD) $(LDFLAGS) start.o testreadwrite.o -o testreadwrite.coff
+	../bin/coff2noff testreadwrite.coff testreadwrite
+
+testexec.o: testexec.c
+	 	$(CC) $(CFLAGS) -c testexec.c
+testexec: testexec.o start.o
+		$(LD) $(LDFLAGS) start.o testexec.o -o testexec.coff
+		../bin/coff2noff testexec.coff testexec
+
+testwaitsignal.o: testwaitsignal.c
+	 	$(CC) $(CFLAGS) -c testwaitsignal.c
+testwaitsignal: testwaitsignal.o start.o
+		$(LD) $(LDFLAGS) start.o testwaitsignal.o -o testwaitsignal.coff
+		../bin/coff2noff testwaitsignal.coff testwaitsignal
+
+testwaitsignal_A.o: testwaitsignal_A.c
+	 	$(CC) $(CFLAGS) -c testwaitsignal_A.c
+testwaitsignal_A: testwaitsignal_A.o start.o
+		$(LD) $(LDFLAGS) start.o testwaitsignal_A.o -o testwaitsignal_A.coff
+		../bin/coff2noff testwaitsignal_A.coff testwaitsignal_A
+
+testwaitsignal_B.o: testwaitsignal_B.c
+	 	$(CC) $(CFLAGS) -c testwaitsignal_B.c
+testwaitsignal_B: testwaitsignal_B.o start.o
+		$(LD) $(LDFLAGS) start.o testwaitsignal_B.o -o testwaitsignal_B.coff
+		../bin/coff2noff testwaitsignal_B.coff testwaitsignal_B
+
+main.o: main.c
+	 	$(CC) $(CFLAGS) -c main.c
+main: main.o start.o
+		$(LD) $(LDFLAGS) start.o main.o -o mainB.coff
+		../bin/coff2noff main.coff main
+
+sinhvien.o: sinhvien.c
+	 	$(CC) $(CFLAGS) -c sinhvien.c
+sinhvien: sinhvien.o start.o
+		$(LD) $(LDFLAGS) start.o sinhvien.o -o sinhvien.coff
+		../bin/coff2noff sinhvien.coff sinhvien
+
+voinuoc.o: voinuoc.c
+	 	$(CC) $(CFLAGS) -c voinuoc.c
+voinuoc: voinuoc.o start.o
+		$(LD) $(LDFLAGS) start.o voinuoc.o -o voinuoc.coff
+		../bin/coff2noff voinuoc.coff voinuoc

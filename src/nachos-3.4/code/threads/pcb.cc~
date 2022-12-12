@@ -1,0 +1,89 @@
+#include "pcb.h"
+#include "synch.h"
+#include "utility.h"
+#include "system.h"
+#include "thread.h"
+#include "addrspace.h"
+
+extern void StartProcess_2(int id);
+
+
+PCB::PCB(int id){ // contructor
+   joinsem= new Semaphore("joinsem",0);
+   exitsem= new Semaphore("exitsem",0);
+   multex=new Semaphore("multex",1);
+}
+PCB::~PCB(){ // deconstructor
+   delete joinsem;
+   delete exitsem;
+   delete multex;
+   if(thread!=NULL){
+      thread->FreeSpace();
+      thread->Finish();
+   }
+   delete[] name;
+}
+    // nạp chương trình có tên lưu trong biến filename và processID là pid
+int PCB::Exec(char *filename, int pid){ // Tạo 1 thread mới có tên là filename và process là pid
+   multex->P(); // tránh tình trạng nạp 2 tiến trình cùng 1 lúc.
+   thread=new Thread(filename);
+  //Kiểm tra thread đã khởi tạo thành công chưa
+   if(thread==NULL){
+	printf("\nKhong du bo nho!\n");
+   	multex->V();
+        return -1;
+   }
+   thread->processID=pid; //Đặt processID của thread này là id.
+   parentID=currentThread->processID; //Đặt parrentID của thread này là processID của thread gọi thực thi Exec 
+   thread->Fork(StartProcess_2,thread->processID); // cast thread thành kiểu int, sau đó khi xử ký hàm StartProcess ta cast Thread về đúng kiểu của nó
+   multex->V();
+   return pid;
+}
+int PCB::GetID(){  // Trả về ProcessID của tiến trình gọi thực hiện
+    return thread->processID;
+}
+int PCB::GetNumWait(){ // Trả về số lượng tiến trình chờ
+    return numwait;
+}
+
+void PCB::JoinWait(){ // 1. Tiến trình cha đợi tiến trình con kết thúc
+   //Gọi joinsem->P() để tiến trình chuyển sang trạng thái block và ngừng lại, chờ JoinRelease để thực hiện tiếp
+    joinsem->P();
+}
+void PCB::ExitWait(){ // 4. Tiến trình con kết thúc
+   //Gọi exitsem-->P() để tiến trình chuyển sang trạng thái block và ngừng lại, chờ ExitReleaseđể thực hiện tiếp. 
+    exitsem->P();
+}
+void PCB::JoinRelease(){ // 2. Báo cho tiến trình cha thực thi tiếp
+//Gọi joinsem->V() để giải phóng tiến trình gọi JoinWait(). 
+    joinsem->V();
+}
+void PCB::ExitRelease(){ // 3. Cho phép tiến trình con kết thúc
+    //Gọi exitsem-->V() để giải phóng tiến trình đang chờ. 
+    exitsem->V();
+}
+void PCB::IncNumWait(){	// Tăng số tiến trình chờ
+   multex->P();
+   numwait++;
+   multex->V();
+}
+void PCB::DecNumWait(){	// Giảm số tiến trình chờ
+   multex->P();
+   if(numwait){
+      --numwait;
+   }
+   multex->V();
+}
+
+void PCB::SetExitCode(int ec){ // Đặt exitcode của tiến trình
+   exitcode=ec;
+}
+int PCB::GetExitCode(){	// Trả về exitcode
+   return exitcode;
+}
+void PCB::SetFileName(char *fn){ // Đặt tên của tiến trình 
+   strcpy(name,fn);
+}
+char* PCB::GetFileName(){	// Trả về tên của tiến trình
+   return name;
+}

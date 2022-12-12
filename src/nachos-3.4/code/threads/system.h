@@ -38,11 +38,10 @@ extern Timer *timer;				// the hardware alarm clock
 #include "synch.h"
 extern Machine* machine;	// user program memory and registers
 extern SynchConsole* gSynchConsole;
-
-extern Semaphore *addrLock;	// semaphore
-extern BitMap *gPhysPageBitMap;	// dùng để quản lí frame
-extern PTable *pTab;		// dùng để quản lí tiến trình
-extern STable *semTab;		// dùng để quản lí semaphore
+extern BitMap *gPhysPageBitMap;	// quan ly cac frame
+extern PTable *pTab;		// quan ly bang tien trinh
+extern Semaphore* addrLock;  //semaphore
+extern STable* semTab; //quan ly semaphore
 #endif
 
 #ifdef FILESYS_NEEDED 		// FILESYS or FILESYS_STUB 

@@ -35,7 +35,10 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt shell matmult createfile sinhvien voinuoc main
+all: halt shell matmult sort readprintint readprintchar readprintstring help ascii \
+	createfile testreadwrite testexec \
+	testwaitsignal testwaitsignal_A testwaitsignal_B \
+	main sinhvien voinuoc
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -54,33 +57,98 @@ shell: shell.o start.o
 	$(LD) $(LDFLAGS) start.o shell.o -o shell.coff
 	../bin/coff2noff shell.coff shell
 
+sort.o: sort.c
+	$(CC) $(CFLAGS) -c sort.c
+sort: sort.o start.o
+	$(LD) $(LDFLAGS) start.o sort.o -o sort.coff
+	../bin/coff2noff sort.coff sort
+
 matmult.o: matmult.c
 	$(CC) $(CFLAGS) -c matmult.c
 matmult: matmult.o start.o
 	$(LD) $(LDFLAGS) start.o matmult.o -o matmult.coff
 	../bin/coff2noff matmult.coff matmult
 
+readprintint.o: readprintint.c
+	$(CC) $(CFLAGS) -c readprintint.c
+readprintint: readprintint.o start.o
+	$(LD) $(LDFLAGS) start.o readprintint.o -o readprintint.coff
+	../bin/coff2noff readprintint.coff readprintint
+
+readprintchar.o: readprintchar.c
+	 	$(CC) $(CFLAGS) -c readprintchar.c
+readprintchar: readprintchar.o start.o
+		$(LD) $(LDFLAGS) start.o readprintchar.o -o readprintchar.coff
+		../bin/coff2noff readprintchar.coff readprintchar
+
+readprintstring.o: readprintstring.c
+	 	$(CC) $(CFLAGS) -c readprintstring.c
+readprintstring: readprintstring.o start.o
+		$(LD) $(LDFLAGS) start.o readprintstring.o -o readprintstring.coff
+		../bin/coff2noff readprintstring.coff readprintstring
+
+help.o: help.c
+	 	$(CC) $(CFLAGS) -c help.c
+help: help.o start.o
+		$(LD) $(LDFLAGS) start.o help.o -o help.coff
+		../bin/coff2noff help.coff help
+
+ascii.o: ascii.c
+	 	$(CC) $(CFLAGS) -c ascii.c
+ascii: ascii.o start.o
+		$(LD) $(LDFLAGS) start.o ascii.o -o ascii.coff
+		../bin/coff2noff ascii.coff ascii
+
 createfile.o: createfile.c
 	$(CC) $(CFLAGS) -c createfile.c
 createfile: createfile.o start.o
 	$(LD) $(LDFLAGS) start.o createfile.o -o createfile.coff
 	../bin/coff2noff createfile.coff createfile
+	
+testreadwrite.o: testreadwrite.c
+	$(CC) $(CFLAGS) -c testreadwrite.c
+testreadwrite: testreadwrite.o start.o
+	$(LD) $(LDFLAGS) start.o testreadwrite.o -o testreadwrite.coff
+	../bin/coff2noff testreadwrite.coff testreadwrite
 
+testexec.o: testexec.c
+	 	$(CC) $(CFLAGS) -c testexec.c
+testexec: testexec.o start.o
+		$(LD) $(LDFLAGS) start.o testexec.o -o testexec.coff
+		../bin/coff2noff testexec.coff testexec
+
+testwaitsignal.o: testwaitsignal.c
+	 	$(CC) $(CFLAGS) -c testwaitsignal.c
+testwaitsignal: testwaitsignal.o start.o
+		$(LD) $(LDFLAGS) start.o testwaitsignal.o -o testwaitsignal.coff
+		../bin/coff2noff testwaitsignal.coff testwaitsignal
+
+testwaitsignal_A.o: testwaitsignal_A.c
+	 	$(CC) $(CFLAGS) -c testwaitsignal_A.c
+testwaitsignal_A: testwaitsignal_A.o start.o
+		$(LD) $(LDFLAGS) start.o testwaitsignal_A.o -o testwaitsignal_A.coff
+		../bin/coff2noff testwaitsignal_A.coff testwaitsignal_A
+
+testwaitsignal_B.o: testwaitsignal_B.c
+	 	$(CC) $(CFLAGS) -c testwaitsignal_B.c
+testwaitsignal_B: testwaitsignal_B.o start.o
+		$(LD) $(LDFLAGS) start.o testwaitsignal_B.o -o testwaitsignal_B.coff
+		../bin/coff2noff testwaitsignal_B.coff testwaitsignal_B
 
 main.o: main.c
-	$(CC) $(CFLAGS) -c main.c
+	 	$(CC) $(CFLAGS) -c main.c
 main: main.o start.o
-	$(LD) $(LDFLAGS) start.o main.o -o main.coff
-	../bin/coff2noff main.coff main
-
-voinuoc.o: voinuoc.c
-	$(CC) $(CFLAGS) -c voinuoc.c
-voinuoc: voinuoc.o start.o
-	$(LD) $(LDFLAGS) start.o voinuoc.o -o voinuoc.coff
-	../bin/coff2noff voinuoc.coff voinuoc
+		$(LD) $(LDFLAGS) start.o main.o -o main.coff
+		../bin/coff2noff main.coff main
 
 sinhvien.o: sinhvien.c
-	$(CC) $(CFLAGS) -c sinhvien.c
+	 	$(CC) $(CFLAGS) -c sinhvien.c
 sinhvien: sinhvien.o start.o
-	$(LD) $(LDFLAGS) start.o sinhvien.o -o sinhvien.coff
-	../bin/coff2noff sinhvien.coff sinhvien
+		$(LD) $(LDFLAGS) start.o sinhvien.o -o sinhvien.coff
+		../bin/coff2noff sinhvien.coff sinhvien
+
+voinuoc.o: voinuoc.c
+	 	$(CC) $(CFLAGS) -c voinuoc.c
+voinuoc: voinuoc.o start.o
+		$(LD) $(LDFLAGS) start.o voinuoc.o -o voinuoc.coff
+		../bin/coff2noff voinuoc.coff voinuoc

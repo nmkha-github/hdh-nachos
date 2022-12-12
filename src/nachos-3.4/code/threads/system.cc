@@ -31,10 +31,10 @@ SynchDisk   *synchDisk;
 Machine *machine;	// user program memory and registers
 SynchConsole* gSynchConsole;
 
-Semaphore *addrLock;	// semaphore
-BitMap *gPhysPageBitMap;	// quan ly cac frame
-PTable *pTab;		// quan ly bang tien trinh
-STable *semTab;		// quan ly semaphore
+Semaphore* addrLock;
+BitMap* gPhysPageBitMap;
+STable* semTab;
+PTable* pTab; 
 #endif
 
 #ifdef NETWORK
@@ -156,11 +156,10 @@ Initialize(int argc, char **argv)
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg);	// this must come first
     gSynchConsole = new SynchConsole();
-
-    addrLock = new Semaphore("addrLock", 1);
     gPhysPageBitMap = new BitMap(256);
     pTab = new PTable(10);
-    semTab = new STable();
+    addrLock=new Semaphore("addrLock",1);
+    semTab=new STable();
 #endif
 
 #ifdef FILESYS
@@ -190,9 +189,7 @@ Cleanup()
     
 #ifdef USER_PROGRAM
     delete machine;
-    delete gSynchConsole;
-
-    //delete addrLock;	
+	delete gSynchConsole;
 #endif
 
 #ifdef FILESYS_NEEDED
