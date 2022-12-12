@@ -238,7 +238,7 @@ void Exception_CreateFile()
 
 	addr = machine->ReadRegister(4);
 
-	fileName = User2System(addr, 255);
+	fileName = User2System(addr, 33);
 
 	if (fileName == NULL)
 	{
@@ -256,7 +256,7 @@ void Exception_CreateFile()
 
 	// Create file with size = 0
 	// Dùng đối tượng fileSystem của lớp OpenFile để tạo file
-	if (fileSystem->Create(fileName, 0) == -1)
+	if (!fileSystem->Create(fileName, 0))
 	{
 		printf("\nXay ra loi khi tao file (%s)", fileName);
 		machine->WriteRegister(2, -1);
