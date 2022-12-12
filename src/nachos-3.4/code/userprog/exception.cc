@@ -689,12 +689,12 @@ void ExceptionHandler(ExceptionType which)
 
 		case SC_Read:
 			Exception_Read();
-			Increase_ProgramCounter();
+			// Increase_ProgramCounter();
 			break;
 
 		case SC_Write:
 			Exception_Write();
-			Increase_ProgramCounter();
+			// Increase_ProgramCounter();
 			break;
 
 		case SC_Exec:
