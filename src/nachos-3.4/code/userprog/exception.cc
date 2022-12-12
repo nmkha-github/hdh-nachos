@@ -365,7 +365,11 @@ void Exception_Read()
         return;
     }
 
+    firstPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
     buffer = User2System(addr, charCount);
+    fileSystem->openFileTable[id]->Read(buffer, charCount);
+    lastPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
+
     // file stdin
     if (fileSystem->openFileTable[id]->type == 2)
     {
@@ -376,10 +380,6 @@ void Exception_Read()
         delete[] buffer;
         return;
     }
-
-    firstPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
-    fileSystem->openFileTable[id]->Read(buffer, charCount);
-    lastPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
 
     // Số byte thực sự = lastPositionInFile - firstPositionInFile
     int size = lastPositionInFile - firstPositionInFile;
@@ -668,101 +668,101 @@ void ExceptionHandler(ExceptionType which)
 
             machine->WriteRegister(2, a + b);
             Increase_ProgramCounter();
-            return;
+            break;
         }
 
         case SC_Halt:
             DEBUG('a', "\nShutdown, initiated by user program. ");
             printf("\nShutdown, initiated by user program. ");
             interrupt->Halt();
-            return;
+            break;
 
         case SC_ReadInt:
             Exception_ReadInt();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_PrintInt:
             Exception_PrintInt();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_ReadChar:
             Exception_ReadChar();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_PrintChar:
             Exception_PrintChar();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_ReadString:
             Exception_ReadString();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_PrintString:
             Exception_PrintString();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_CreateFile:
             Exception_CreateFile();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_Open:
             Exception_Open();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_Close:
             Exception_Close();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_Read:
             Exception_Read();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_Write:
             Exception_Write();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_Exec:
             Exception_Exec();
             Increase_ProgramCounter();
-            return;
+            break;
         case SC_Join:
             Exception_Join();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_Exit:
             Exception_Exit();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_CreateSemaphore:
             Exception_CreateSemaphore();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_Wait:
             Exception_Wait();
             Increase_ProgramCounter();
-            return;
+            break;
 
         case SC_Signal:
             Exception_Signal();
             Increase_ProgramCounter();
-            return;
+            break;
 
         default:
-            return;
+            break;
         }
     }
 }
