@@ -337,6 +337,7 @@ void Exception_Read()
 	int firstPositionInFile;
 	int lastPositionInFile;
 	char *buffer;
+	char *temp;
 
 	// Lấy giá trị tham số từ thanh ghi
 	addr = machine->ReadRegister(4);
@@ -366,37 +367,33 @@ void Exception_Read()
 		return;
 	}
 
-	firstPositionInFile = fileSystem->openf[id]->GetCurrentPos();
-	buffer = User2System(addr, charCount);
-	fileSystem->openf[id]->Read(buffer, charCount);
-	lastPositionInFile = fileSystem->openf[id]->GetCurrentPos();
+	firstPositionInFile = fileSystem->openf[id]->GetCurrentPos(); // Kiem tra thanh cong thi lay vi tri OldPos
+	temp = User2System(addr, charCount);													// Copy chuoi tu vung nho User Space sang System Space
 
 	// file stdin
 	if (fileSystem->openf[id]->type == 2)
 	{
 		// Số byte thực sự đọc được
-		int size = gSynchConsole->Read(buffer, charCount);
-		System2User(addr, size, buffer);
+		int size = gSynchConsole->Read(temp, charCount);
+		System2User(addr, size, temp);
 		machine->WriteRegister(2, size);
-		delete[] buffer;
+		delete temp;
 		return;
 	}
 
-	// Số byte thực sự = lastPositionInFile - firstPositionInFile
-	int size = lastPositionInFile - firstPositionInFile;
-
-	// Trường hợp file khác rỗng
-	if (size > 0)
+	if ((fileSystem->openf[id]->Read(temp, charCount)) > 0)
 	{
-		System2User(addr, size, buffer);
-		machine->WriteRegister(2, size);
-		delete[] buffer;
-		return;
+		lastPositionInFile = fileSystem->openf[id]->GetCurrentPos();
+		// Số byte thực sự = NewPos - OldPos
+		System2User(addr, lastPositionInFile - firstPositionInFile, temp);
+		machine->WriteRegister(2, lastPositionInFile - firstPositionInFile);
 	}
-
-	// Trường hợp còn lại file null trả về -2
-	machine->WriteRegister(2, -2);
-	delete[] buffer;
+	else
+	{
+		// Đến cuối file
+		machine->WriteRegister(2, -2);
+	}
+	delete temp;
 }
 
 void Exception_Write()
