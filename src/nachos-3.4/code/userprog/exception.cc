@@ -305,12 +305,13 @@ void Exception_Close()
 	int fileId;
 	fileId = machine->ReadRegister(4);
 	// Chỉ xử lí trong phạm vi bảng mô tả file
-	if (fileId >= 0 && fileId <= 10)
+	if (fileId >= 0 && fileId <= 14)
 	{
 		if (fileSystem->openf[fileId])
 		{
 			machine->WriteRegister(2, 0); // Trả kết quả thành công
-			delete[] fileSystem->openf[fileId];
+			delete fileSystem->openf[fileId];
+			return;
 		}
 	}
 	machine->WriteRegister(2, -1); // Trả lỗi
