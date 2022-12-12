@@ -8,7 +8,7 @@
 //
 //	exceptions -- The user code does something that the CPU can't handle.
 //	For instance, accessing memory that doesn't exist, arithmetic errors,
-//	etc.  
+//	etc.
 //
 //	Interrupts (which can also cause control to transfer from user
 //	code into the Nachos kernel) are handled elsewhere.
@@ -17,10 +17,8 @@
 // Everything else core dumps.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
-
-
 
 #include "copyright.h"
 #include "system.h"
@@ -37,58 +35,60 @@
 // 	   1. Thanh ghi r2: Chua ma lenh syscall va ket qua thuc hien o syscall se tra nguoc ve
 // 	   2. Thanh ghi r4: Tham so thu nhat
 //	   3. Thanh ghi r5: Tham so thu hai
-//	   4. Thanh ghi r6: Tham so thu ba	   
+//	   4. Thanh ghi r6: Tham so thu ba
 //	   5. Thanh ghi r7: Tham so thu tu
 //
-// 
+//
 //
 // And don't forget to increment the pc before returning. (Or else you'll
 // loop making the same system call forever!
 //
-//	"which" is the kind of exception.  The list of possible exceptions 
+//	"which" is the kind of exception.  The list of possible exceptions
 //	are in machine.h.
 //----------------------------------------------------------------------
 
 // Input: Khong gian dia chi User(int) - gioi han cua buffer(int)
 // Output: Bo nho dem Buffer(char*)
 // Chuc nang: Sao chep vung nho User sang vung nho System
-char* User2System(int virtAddr, int limit)
+char *User2System(int virtAddr, int limit)
 {
-	int i; //chi so index
-	int oneChar;
-	char* kernelBuf = NULL;
-	kernelBuf = new char[limit + 1]; //can cho chuoi terminal
-	if (kernelBuf == NULL)
-		return kernelBuf;
-		
-	memset(kernelBuf, 0, limit + 1);
-	
-	for (i = 0; i < limit; i++)
-	{
-		machine->ReadMem(virtAddr + i, 1, &oneChar);
-		kernelBuf[i] = (char)oneChar;
-		if (oneChar == 0)
-			break;
-	}
-	return kernelBuf;
-}
+    int i; // chi so index
+    int oneChar;
+    char *kernelBuf = NULL;
+    kernelBuf = new char[limit + 1]; // can cho chuoi terminal
+    if (kernelBuf == NULL)
+        return kernelBuf;
 
+    memset(kernelBuf, 0, limit + 1);
+
+    for (i = 0; i < limit; i++)
+    {
+        machine->ReadMem(virtAddr + i, 1, &oneChar);
+        kernelBuf[i] = (char)oneChar;
+        if (oneChar == 0)
+            break;
+    }
+    return kernelBuf;
+}
 
 // Input: Khong gian vung nho User(int) - gioi han cua buffer(int) - bo nho dem buffer(char*)
 // Output: So byte da sao chep(int)
 // Chuc nang: Sao chep vung nho System sang vung nho User
-int System2User(int virtAddr, int len, char* buffer)
+int System2User(int virtAddr, int len, char *buffer)
 {
-	if (len < 0) return -1;
-	if (len == 0)return len;
-	int i = 0;
-	int oneChar = 0;
-	do{
-		oneChar = (int)buffer[i];
-		machine->WriteMem(virtAddr + i, 1, oneChar);
-		i++;
-	} while (i < len && oneChar != 0);
-	return i;
+    if (len < 0)
+        return -1;
+    if (len == 0)
+        return len;
+    int i = 0;
+    int oneChar = 0;
+    do
+    {
+        oneChar = (int)buffer[i];
+        machine->WriteMem(virtAddr + i, 1, oneChar);
+        i++;
+    } while (i < len && oneChar != 0);
+    return i;
 }
 
 // Di chuyen thanh ghi ve sau 4 byte de nap lenh ke tiep
@@ -173,7 +173,7 @@ void Exception_Halt()
 
 void Exception_PrintInt()
 {
-    int n = machine->ReadRegister(4); //đọc số đã được gán sẵn
+    int n = machine->ReadRegister(4); // đọc số đã được gán sẵn
     const int maxlen = 11;            // giá trị độ dài tối đa kiểu int
     char num_string[maxlen] = {0};
     int tmp[maxlen] = {0}, i = 0, j = 0;
@@ -269,33 +269,35 @@ void Exception_CreateFile()
 void Exception_Open()
 {
     int addr;
-    int type; 
-    char* filename;
+    int type;
+    char *filename;
 
-    //Lấy các tham số từ thanh ghi
-    addr = machine->ReadRegister(4); 
-    type = machine->ReadRegister(5); 
+    // Lấy các tham số từ thanh ghi
+    addr = machine->ReadRegister(4);
+    type = machine->ReadRegister(5);
     filename = User2System(addr, 255);
 
     int freeSlot = fileSystem->FindFreeSlot();
-    
-    if (freeSlot == -1){
-        machine->WriteRegister(2, -1); //Trả lỗi về cho người dùng
+
+    if (freeSlot == -1)
+    {
+        machine->WriteRegister(2, -1); // Trả lỗi về cho người dùng
     }
 
-    switch (type){
-    case 0: 
+    switch (type)
+    {
+    case 0:
         fileSystem->openFileTable[freeSlot] = fileSystem->Open(filename, type);
         if (fileSystem->openFileTable[freeSlot] != NULL)
         {
-            machine->WriteRegister(2, freeSlot); //trả về vị trí còn trống
+            machine->WriteRegister(2, freeSlot); // trả về vị trí còn trống
         }
         break;
     case 1:
         fileSystem->openFileTable[freeSlot] = fileSystem->Open(filename, type);
-        if (fileSystem->openFileTable[freeSlot] != NULL) //Mo file thanh cong
+        if (fileSystem->openFileTable[freeSlot] != NULL) // Mo file thanh cong
         {
-            machine->WriteRegister(2, freeSlot); //trả về vị trí còn trống
+            machine->WriteRegister(2, freeSlot); // trả về vị trí còn trống
         }
         break;
     case 2:
@@ -305,24 +307,24 @@ void Exception_Open()
         machine->WriteRegister(2, 1);
         break;
     }
- 
+
     delete[] filename;
 }
 
 void Exception_Close()
 {
     int fileId;
-    fileId = machine->ReadRegister(4); 
-    //Chỉ xử lí trong phạm vi bảng mô tả file
-    if (fileId >= 0 && fileId <= 10) 
+    fileId = machine->ReadRegister(4);
+    // Chỉ xử lí trong phạm vi bảng mô tả file
+    if (fileId >= 0 && fileId <= 10)
     {
-        if (fileSystem->openFileTable[fileId]) 
+        if (fileSystem->openFileTable[fileId])
         {
-            machine->WriteRegister(2, 0);   //Trả kết quả thành công
-            delete[] fileSystem->openFileTable[fileId]; 
+            machine->WriteRegister(2, 0); // Trả kết quả thành công
+            delete[] fileSystem->openFileTable[fileId];
         }
     }
-    machine->WriteRegister(2, -1);  // Trả lỗi
+    machine->WriteRegister(2, -1); // Trả lỗi
 }
 
 void Exception_Read()
@@ -335,10 +337,10 @@ void Exception_Read()
     int lastPositionInFile;
     char *buffer;
 
-    //Lấy giá trị tham số từ thanh ghi
+    // Lấy giá trị tham số từ thanh ghi
     addr = machine->ReadRegister(4);
-    charCount = machine->ReadRegister(5); 
-    id = machine->ReadRegister(6);  
+    charCount = machine->ReadRegister(5);
+    id = machine->ReadRegister(6);
 
     // Nếu nằm ngoài bảng mô tả thì trả lỗi
     if (id < 0 || id > 14)
@@ -348,7 +350,7 @@ void Exception_Read()
         return;
     }
 
-    //Kiểm tra file tồn tại
+    // Kiểm tra file tồn tại
     if (fileSystem->openFileTable[id] == NULL)
     {
         printf("\nFile khong ton tai.");
@@ -356,21 +358,21 @@ void Exception_Read()
         return;
     }
 
-    if (fileSystem->openFileTable[id]->type == 3) 
+    if (fileSystem->openFileTable[id]->type == 3)
     {
         printf("\nKhong the read file stdout.");
         machine->WriteRegister(2, -1);
         return;
     }
 
-    buffer = User2System(addr, charCount); 
-    //file stdin 
+    buffer = User2System(addr, charCount);
+    // file stdin
     if (fileSystem->openFileTable[id]->type == 2)
     {
         // Số byte thực sự đọc được
-        int size = gSynchConsole->Read(buffer, charCount); 
-        System2User(addr, size, buffer); 
-        machine->WriteRegister(2, size); 
+        int size = gSynchConsole->Read(buffer, charCount);
+        System2User(addr, size, buffer);
+        machine->WriteRegister(2, size);
         delete[] buffer;
         return;
     }
@@ -379,19 +381,20 @@ void Exception_Read()
     fileSystem->openFileTable[id]->Read(buffer, charCount);
     lastPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
 
-    //Số byte thực sự = lastPositionInFile - firstPositionInFile
+    // Số byte thực sự = lastPositionInFile - firstPositionInFile
     int size = lastPositionInFile - firstPositionInFile;
 
-    //Trường hợp file khác rỗng
-    if (size > 0){
-        System2User(addr, size, buffer); 
+    // Trường hợp file khác rỗng
+    if (size > 0)
+    {
+        System2User(addr, size, buffer);
         machine->WriteRegister(2, size);
         delete[] buffer;
         return;
     }
 
-    //Trường hợp còn lại file null trả về -2
-    machine->WriteRegister(2, -2); 
+    // Trường hợp còn lại file null trả về -2
+    machine->WriteRegister(2, -2);
     delete[] buffer;
 }
 
@@ -405,10 +408,10 @@ void Exception_Write()
     int lastPositionInFile;
     char *buffer;
 
-    //Lấy giá trị tham số từ thanh ghi
+    // Lấy giá trị tham số từ thanh ghi
     addr = machine->ReadRegister(4);
-    charCount = machine->ReadRegister(5); 
-    id = machine->ReadRegister(6);  
+    charCount = machine->ReadRegister(5);
+    id = machine->ReadRegister(6);
 
     // Nếu nằm ngoài bảng mô tả thì trả lỗi
     if (id < 0 || id > 14)
@@ -418,7 +421,7 @@ void Exception_Write()
         return;
     }
 
-    //Kiểm tra file tồn tại
+    // Kiểm tra file tồn tại
     if (fileSystem->openFileTable[id] == NULL)
     {
         printf("\nFile khong ton tai.");
@@ -426,7 +429,7 @@ void Exception_Write()
         return;
     }
 
-    if (fileSystem->openFileTable[id]->type == 1 || fileSystem->openFileTable[id]->type == 2) 
+    if (fileSystem->openFileTable[id]->type == 1 || fileSystem->openFileTable[id]->type == 2)
     {
         printf("\nKhong the viet file stdin hoac file chi doc.");
         machine->WriteRegister(2, -1);
@@ -434,25 +437,26 @@ void Exception_Write()
     }
 
     firstPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
+    buffer = User2System(addr, charCount);
     fileSystem->openFileTable[id]->Write(buffer, charCount);
     lastPositionInFile = fileSystem->openFileTable[id]->GetCurrentPos();
 
-    //Số byte thực sự = lastPositionInFile - firstPositionInFile
+    // Số byte thực sự = lastPositionInFile - firstPositionInFile
     int size = lastPositionInFile - firstPositionInFile;
 
-    //Xét với file chỉ đọc và viết thì trả về số byte thật sự
+    // Xét với file chỉ đọc và viết thì trả về số byte thật sự
     if (fileSystem->openFileTable[id]->type == 0)
     {
         if (size > 0)
         {
-            machine->WriteRegister(2, size);   //Trả về số byte thật sự
+            machine->WriteRegister(2, size); // Trả về số byte thật sự
             delete[] buffer;
             return;
         }
     }
 
-    //Với file stdout
-    if (fileSystem->openFileTable[id]->type == 3) 
+    // Với file stdout
+    if (fileSystem->openFileTable[id]->type == 3)
     {
         int i;
         for (i = 0; buffer[i] != '\0'; i++)
@@ -467,8 +471,8 @@ void Exception_Write()
 void Exception_Exec()
 {
     int addr;
-    addr = machine->ReadRegister(4);	// doc dia chi ten chuong trinh tu thanh ghi r4
-    char* name;
+    addr = machine->ReadRegister(4); // doc dia chi ten chuong trinh tu thanh ghi r4
+    char *name;
     name = User2System(addr, 255); // Lay ten chuong trinh, nap vao kernel
 
     if (name == NULL)
@@ -483,14 +487,14 @@ void Exception_Exec()
     if (openFile == NULL)
     {
         printf("\n Khong mo duoc file chuong trinh.");
-        machine->WriteRegister(2,-1);
+        machine->WriteRegister(2, -1);
         return;
     }
 
     delete openFile;
 
     // id của tiểu trình
-    int id = pTab->ExecUpdate(name); 
+    int id = pTab->ExecUpdate(name);
     machine->WriteRegister(2, id);
 
     delete[] name;
@@ -498,264 +502,267 @@ void Exception_Exec()
 
 void Exception_Join()
 {
-	int id = machine->ReadRegister(4);
-		
-	int res = pTab->JoinUpdate(id);
-	
-	machine->WriteRegister(2, res);
+    int id = machine->ReadRegister(4);
+
+    int res = pTab->JoinUpdate(id);
+
+    machine->WriteRegister(2, res);
 }
 
 void Exception_Exit()
 {
-	int exitStatus = machine->ReadRegister(4);
+    int exitStatus = machine->ReadRegister(4);
 
-	if(exitStatus == 0){	
-		int res = pTab->ExitUpdate(exitStatus);
+    if (exitStatus == 0)
+    {
+        int res = pTab->ExitUpdate(exitStatus);
 
-		currentThread->FreeSpace();
-		currentThread->Finish();
-	}
+        currentThread->FreeSpace();
+        currentThread->Finish();
+    }
 }
 
 void Exception_CreateSemaphore()
 {
-	int addr;
-	int semval;
+    int addr;
+    int semval;
 
-	//Lấy các tham số từ thanh ghi
-	addr = machine->ReadRegister(4);
-	semval = machine->ReadRegister(5);
+    // Lấy các tham số từ thanh ghi
+    addr = machine->ReadRegister(4);
+    semval = machine->ReadRegister(5);
 
-	char *name = User2System(addr, 255);
-	if (name == NULL)
-	{
-		DEBUG('a', "\nKhong du bo nho");
-		printf("\nKhong du bo nho");
-		machine->WriteRegister(2, -1);
-		delete[] name;
-		return;
-	}
+    char *name = User2System(addr, 255);
+    if (name == NULL)
+    {
+        DEBUG('a', "\nKhong du bo nho");
+        printf("\nKhong du bo nho");
+        machine->WriteRegister(2, -1);
+        delete[] name;
+        return;
+    }
 
-	if (semTab->Create(name, semval) == -1)
-	{
-		DEBUG('a', "\nCo loi khi khoi tao semaphore");
-		printf("\nCo loi khi khoi tao semaphore");
-		machine->WriteRegister(2, -1);
-		delete[] name;
-		return;
-	}
-	
-	delete[] name;
-	machine->WriteRegister(2, 0);
+    if (semTab->Create(name, semval) == -1)
+    {
+        DEBUG('a', "\nCo loi khi khoi tao semaphore");
+        printf("\nCo loi khi khoi tao semaphore");
+        machine->WriteRegister(2, -1);
+        delete[] name;
+        return;
+    }
+
+    delete[] name;
+    machine->WriteRegister(2, 0);
 }
 
 void Exception_Wait()
 {
-	int addr;
+    int addr;
 
-	addr = machine->ReadRegister(4);
+    addr = machine->ReadRegister(4);
 
-	char *name = User2System(addr, 255);
-	if (name == NULL)
-	{
-		DEBUG('a', "\nKhong du bo nho");
-		printf("\nKhong du bo nho");
-		machine->WriteRegister(2, -1);
-		delete[] name;
-		return;
-	}
+    char *name = User2System(addr, 255);
+    if (name == NULL)
+    {
+        DEBUG('a', "\nKhong du bo nho");
+        printf("\nKhong du bo nho");
+        machine->WriteRegister(2, -1);
+        delete[] name;
+        return;
+    }
 
-	if (semTab->Wait(name) == -1)
-	{
-		DEBUG('a', "\n Khong ton tai ten semaphore nay!");
-		printf("\n Khong ton tai ten semaphore nay!");
-		machine->WriteRegister(2, -1);
-		delete[] name;
-		return;				
-	}
-	
-	delete[] name;
-	machine->WriteRegister(2, 0);
+    if (semTab->Wait(name) == -1)
+    {
+        DEBUG('a', "\n Khong ton tai ten semaphore nay!");
+        printf("\n Khong ton tai ten semaphore nay!");
+        machine->WriteRegister(2, -1);
+        delete[] name;
+        return;
+    }
+
+    delete[] name;
+    machine->WriteRegister(2, 0);
 }
 
 void Exception_Signal()
 {
-	int addr;
+    int addr;
 
-	addr = machine->ReadRegister(4);
+    addr = machine->ReadRegister(4);
 
-	char *name = User2System(addr, 255);
-	if (name == NULL)
-	{
-		DEBUG('a', "\nKhong du bo nho");
-		printf("\nKhong du bo nho");
-		machine->WriteRegister(2, -1);
-		delete[] name;
-		return;
-	}
+    char *name = User2System(addr, 255);
+    if (name == NULL)
+    {
+        DEBUG('a', "\nKhong du bo nho");
+        printf("\nKhong du bo nho");
+        machine->WriteRegister(2, -1);
+        delete[] name;
+        return;
+    }
 
-	if (semTab->Signal(name) == -1)
-	{
-		DEBUG('a', "\n Khong ton tai ten semaphore nay!");
-		printf("\n Khong ton tai ten semaphore nay!");
-		machine->WriteRegister(2, -1);
-		delete[] name;
-		return;				
-	}
-	
-	delete[] name;
-	machine->WriteRegister(2, 0);
+    if (semTab->Signal(name) == -1)
+    {
+        DEBUG('a', "\n Khong ton tai ten semaphore nay!");
+        printf("\n Khong ton tai ten semaphore nay!");
+        machine->WriteRegister(2, -1);
+        delete[] name;
+        return;
+    }
+
+    delete[] name;
+    machine->WriteRegister(2, 0);
 }
 
 // Ham xu ly ngoai le runtime Exception va system call
 void ExceptionHandler(ExceptionType which)
 {
-  int type = machine->ReadRegister(2);
-	switch (which) {
-	case NoException:
-		return;
+    int type = machine->ReadRegister(2);
+    switch (which)
+    {
+    case NoException:
+        return;
 
-	case PageFaultException:
+    case PageFaultException:
         DEBUG('a', "\nKhong tim thay dinh vi du lieu trong RAM. ");
         printf("\n\nKhong tim thay dinh vi du lieu trong RAM. ");
         interrupt->Halt();
         return;
-	case ReadOnlyException:
-			DEBUG('a', "\nTrang dang co gang ghi vao duoc danh dau la 'chi doc'.");
-			printf("\n\nTrang dang co gang ghi vao duoc danh dau la 'chi doc'.");
-			interrupt->Halt();
-			return;
-	case BusErrorException:
-			DEBUG('a', "\nChuong trinh dang co truy cap bo nho khong the xac dinh dia chi vat ly.");
-			printf("\n\nChuong trinh dang co truy cap bo nho khong the xac dinh dia chi vat ly.");
-			interrupt->Halt();
-			return;
-	case AddressErrorException:
-			DEBUG('a', "\nChuong trinh dang tham chieu den mot khong gian dia chi bat hop phap.");
-			printf("\n\nChuong trinh dang tham chieu den mot khong gian dia chi bat hop phap.");
-			interrupt->Halt();
-			return;
-	case OverflowException:
-			DEBUG('a', "\nLoi tran so do phep tinh cong hoac tru.");
-			printf("\n\nLoi tran so do phep tinh cong hoac tru.");
-			interrupt->Halt();
-			return;
-	case IllegalInstrException:
-			DEBUG('a', "\nLenh dang co gang thuc thi khong duoc ho tro.");
-			printf("\n\nLenh dang co gang thuc thi khong duoc ho tro.");
-			interrupt->Halt();
-			return;
-	case NumExceptionTypes:
-			DEBUG('a', "\nChuong trinh gap loi ngoai le so.");
-			printf("\n\nChuong trinh gap loi ngoai le so.");
-			interrupt->Halt();
-			return;
+    case ReadOnlyException:
+        DEBUG('a', "\nTrang dang co gang ghi vao duoc danh dau la 'chi doc'.");
+        printf("\n\nTrang dang co gang ghi vao duoc danh dau la 'chi doc'.");
+        interrupt->Halt();
+        return;
+    case BusErrorException:
+        DEBUG('a', "\nChuong trinh dang co truy cap bo nho khong the xac dinh dia chi vat ly.");
+        printf("\n\nChuong trinh dang co truy cap bo nho khong the xac dinh dia chi vat ly.");
+        interrupt->Halt();
+        return;
+    case AddressErrorException:
+        DEBUG('a', "\nChuong trinh dang tham chieu den mot khong gian dia chi bat hop phap.");
+        printf("\n\nChuong trinh dang tham chieu den mot khong gian dia chi bat hop phap.");
+        interrupt->Halt();
+        return;
+    case OverflowException:
+        DEBUG('a', "\nLoi tran so do phep tinh cong hoac tru.");
+        printf("\n\nLoi tran so do phep tinh cong hoac tru.");
+        interrupt->Halt();
+        return;
+    case IllegalInstrException:
+        DEBUG('a', "\nLenh dang co gang thuc thi khong duoc ho tro.");
+        printf("\n\nLenh dang co gang thuc thi khong duoc ho tro.");
+        interrupt->Halt();
+        return;
+    case NumExceptionTypes:
+        DEBUG('a', "\nChuong trinh gap loi ngoai le so.");
+        printf("\n\nChuong trinh gap loi ngoai le so.");
+        interrupt->Halt();
+        return;
 
-	case SyscallException:
-		switch (type){
-		case SC_Sum:
-		{
-			//Code mẫu
-			int a = machine->ReadRegister(4);
-			int b = machine->ReadRegister(5);
-			
-			machine->WriteRegister(2, a + b);
-			Increase_ProgramCounter();
-			return;
-		}
+    case SyscallException:
+        switch (type)
+        {
+        case SC_Sum:
+        {
+            // Code mẫu
+            int a = machine->ReadRegister(4);
+            int b = machine->ReadRegister(5);
 
-		case SC_Halt:
-			DEBUG('a', "\nShutdown, initiated by user program. ");
-			printf("\nShutdown, initiated by user program. ");
-			interrupt->Halt();
-			return;
+            machine->WriteRegister(2, a + b);
+            Increase_ProgramCounter();
+            return;
+        }
 
-		case SC_ReadInt:
-			Exception_ReadInt();
-			Increase_ProgramCounter();
-			return;		
+        case SC_Halt:
+            DEBUG('a', "\nShutdown, initiated by user program. ");
+            printf("\nShutdown, initiated by user program. ");
+            interrupt->Halt();
+            return;
 
-		case SC_PrintInt:
-			Exception_PrintInt();
-			Increase_ProgramCounter();
-			return;	
+        case SC_ReadInt:
+            Exception_ReadInt();
+            Increase_ProgramCounter();
+            return;
 
-		case SC_ReadChar:
-			Exception_ReadChar();
-			Increase_ProgramCounter();
-			return;	
+        case SC_PrintInt:
+            Exception_PrintInt();
+            Increase_ProgramCounter();
+            return;
 
-		case SC_PrintChar:
-			Exception_PrintChar();
-			Increase_ProgramCounter();
-			return;	
+        case SC_ReadChar:
+            Exception_ReadChar();
+            Increase_ProgramCounter();
+            return;
 
-		case SC_ReadString:
-			Exception_ReadString();
-			Increase_ProgramCounter();
-			return;
+        case SC_PrintChar:
+            Exception_PrintChar();
+            Increase_ProgramCounter();
+            return;
 
-		case SC_PrintString:
-			Exception_PrintString();
-			Increase_ProgramCounter();
-			return;
+        case SC_ReadString:
+            Exception_ReadString();
+            Increase_ProgramCounter();
+            return;
 
-		case SC_CreateFile:
-			Exception_CreateFile();
-			Increase_ProgramCounter();
-			return;
+        case SC_PrintString:
+            Exception_PrintString();
+            Increase_ProgramCounter();
+            return;
 
-		case SC_Open:
-			Exception_Open();
-			Increase_ProgramCounter();
-			return;
+        case SC_CreateFile:
+            Exception_CreateFile();
+            Increase_ProgramCounter();
+            return;
 
-		case SC_Close:
-			Exception_Close();
-			Increase_ProgramCounter();
-			return;
+        case SC_Open:
+            Exception_Open();
+            Increase_ProgramCounter();
+            return;
 
-		case SC_Read:
-			Exception_Read();
-			Increase_ProgramCounter();
-			return;
+        case SC_Close:
+            Exception_Close();
+            Increase_ProgramCounter();
+            return;
 
-		case SC_Write:
-			Exception_Write();
-			Increase_ProgramCounter();
-			return;
-		
-		case SC_Exec:
-			Exception_Exec();
-			Increase_ProgramCounter();
-			return;
-		case SC_Join:       
-			Exception_Join();
-			Increase_ProgramCounter();
-			return;
+        case SC_Read:
+            Exception_Read();
+            Increase_ProgramCounter();
+            return;
 
-		case SC_Exit:
-			Exception_Exit();
-			Increase_ProgramCounter();
-			return;
+        case SC_Write:
+            Exception_Write();
+            Increase_ProgramCounter();
+            return;
 
-		case SC_CreateSemaphore:
-			Exception_CreateSemaphore();
-			Increase_ProgramCounter();
-			return;
-		
-		case SC_Wait:			
-			Exception_Wait();
-			Increase_ProgramCounter();
-			return;
+        case SC_Exec:
+            Exception_Exec();
+            Increase_ProgramCounter();
+            return;
+        case SC_Join:
+            Exception_Join();
+            Increase_ProgramCounter();
+            return;
 
-		case SC_Signal:		
-			Exception_Signal();
-			Increase_ProgramCounter();
-			return;
-		
-		default:
-			return;
-		}
-	}
+        case SC_Exit:
+            Exception_Exit();
+            Increase_ProgramCounter();
+            return;
+
+        case SC_CreateSemaphore:
+            Exception_CreateSemaphore();
+            Increase_ProgramCounter();
+            return;
+
+        case SC_Wait:
+            Exception_Wait();
+            Increase_ProgramCounter();
+            return;
+
+        case SC_Signal:
+            Exception_Signal();
+            Increase_ProgramCounter();
+            return;
+
+        default:
+            return;
+        }
+    }
 }
