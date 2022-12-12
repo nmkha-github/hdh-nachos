@@ -282,6 +282,7 @@ void Exception_Open()
     if (freeSlot == -1)
     {
         machine->WriteRegister(2, -1); // Trả lỗi về cho người dùng
+        return;
     }
 
     switch (type)

@@ -39,6 +39,11 @@ int main()
 		flag = Read(c, 1, fileOut);
 		if (flag == -1)
 		{
+			PrintChar('\n');
+			PrintInt(fileOut);
+			PrintChar('\n');
+			PrintInt(fileSinhVien);
+			PrintString("\nsinhvien.c");
 			PrintString("\nRead error in file sinhvien.txt!");
 			Close(fileSinhVien);
 			Close(fileOut);
