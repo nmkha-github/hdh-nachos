@@ -367,8 +367,8 @@ void Exception_Read()
 		return;
 	}
 
-	firstPositionInFile = fileSystem->openf[id]->GetCurrentPos(); // Kiem tra thanh cong thi lay vi tri OldPos
-	temp = User2System(addr, charCount);													// Copy chuoi tu vung nho User Space sang System Space
+	firstPositionInFile = fileSystem->openf[id]->GetCurrentPos();
+	temp = User2System(addr, charCount);
 
 	// file stdin
 	if (fileSystem->openf[id]->type == 2)
@@ -398,71 +398,59 @@ void Exception_Read()
 
 void Exception_Write()
 {
-	int addr;
-	int charCount;
-	int id;
+	int virtAddr = machine->ReadRegister(4);	// Lay dia chi cua tham so buffer tu thanh ghi so 4
+	int charcount = machine->ReadRegister(5); // Lay charcount tu thanh ghi so 5
+	int id = machine->ReadRegister(6);				// Lay id cua file tu thanh ghi so 6
+	int OldPos;
+	int NewPos;
+	char *temp;
 
-	int firstPositionInFile;
-	int lastPositionInFile;
-	char *buffer;
-
-	// Lấy giá trị tham số từ thanh ghi
-	addr = machine->ReadRegister(4);
-	charCount = machine->ReadRegister(5);
-	id = machine->ReadRegister(6);
-
-	// Nếu nằm ngoài bảng mô tả thì trả lỗi
 	if (id < 0 || id > 14)
 	{
-		printf("\nFile ID nam ngoai bang mo ta");
+		printf("\nKhong the write vi id nam ngoai bang mo ta file.");
 		machine->WriteRegister(2, -1);
-		return;
 	}
 
-	// Kiểm tra file tồn tại
 	if (fileSystem->openf[id] == NULL)
 	{
-		printf("\nFile khong ton tai.");
+		printf("\nKhong the write vi file nay khong ton tai.");
 		machine->WriteRegister(2, -1);
-		return;
 	}
 
+	// file only read hoac file stdin thi tra ve -1
 	if (fileSystem->openf[id]->type == 1 || fileSystem->openf[id]->type == 2)
 	{
-		printf("\nKhong the viet file stdin hoac file chi doc.");
+		printf("\nKhong the write file stdin hoac file only read.");
 		machine->WriteRegister(2, -1);
-		return;
 	}
+	OldPos = fileSystem->openf[id]->GetCurrentPos();
+	temp = User2System(virtAddr, charcount);
 
-	firstPositionInFile = fileSystem->openf[id]->GetCurrentPos();
-	buffer = User2System(addr, charCount);
-	fileSystem->openf[id]->Write(buffer, charCount);
-	lastPositionInFile = fileSystem->openf[id]->GetCurrentPos();
-
-	// Số byte thực sự = lastPositionInFile - firstPositionInFile
-	int size = lastPositionInFile - firstPositionInFile;
-
-	// Xét với file chỉ đọc và viết thì trả về số byte thật sự
+	// file read & write thì trả về số byte thực sự
 	if (fileSystem->openf[id]->type == 0)
 	{
-		if (size > 0)
+		if ((fileSystem->openf[id]->Write(temp, charcount)) > 0)
 		{
-			machine->WriteRegister(2, size); // Trả về số byte thật sự
-			delete[] buffer;
-			return;
+			// Số byte thực sự = NewPos - OldPos
+			NewPos = fileSystem->openf[id]->GetCurrentPos();
+			machine->WriteRegister(2, NewPos - OldPos);
+			delete temp;
 		}
 	}
 
-	// Với file stdout
+	// Trường hợp còn lại là file stdout
 	if (fileSystem->openf[id]->type == 3)
 	{
-		int i;
-		for (i = 0; buffer[i] != '\0'; i++)
+		int i = 0;
+		while (temp[i] != 0 && temp[i] != '\n')
 		{
-			gSynchConsole->Write(buffer + i, 1);
+			gSynchConsole->Write(temp + i, 1);
+			i++;
 		}
-		machine->WriteRegister(2, i - 1); // Tra ve so byte thuc su write duoc
-		delete[] buffer;
+		temp[i] = '\n';
+		gSynchConsole->Write(temp + i, 1);
+		machine->WriteRegister(2, i - 1); // trả về số byte thực sự
+		delete temp;
 	}
 }
 
@@ -613,37 +601,37 @@ void ExceptionHandler(ExceptionType which)
 		DEBUG('a', "\nKhong tim thay dinh vi du lieu trong RAM. ");
 		printf("\n\nKhong tim thay dinh vi du lieu trong RAM. ");
 		interrupt->Halt();
-		return;
+		break;
 	case ReadOnlyException:
 		DEBUG('a', "\nTrang dang co gang ghi vao duoc danh dau la 'chi doc'.");
 		printf("\n\nTrang dang co gang ghi vao duoc danh dau la 'chi doc'.");
 		interrupt->Halt();
-		return;
+		break;
 	case BusErrorException:
 		DEBUG('a', "\nChuong trinh dang co truy cap bo nho khong the xac dinh dia chi vat ly.");
 		printf("\n\nChuong trinh dang co truy cap bo nho khong the xac dinh dia chi vat ly.");
 		interrupt->Halt();
-		return;
+		break;
 	case AddressErrorException:
 		DEBUG('a', "\nChuong trinh dang tham chieu den mot khong gian dia chi bat hop phap.");
 		printf("\n\nChuong trinh dang tham chieu den mot khong gian dia chi bat hop phap.");
 		interrupt->Halt();
-		return;
+		break;
 	case OverflowException:
 		DEBUG('a', "\nLoi tran so do phep tinh cong hoac tru.");
 		printf("\n\nLoi tran so do phep tinh cong hoac tru.");
 		interrupt->Halt();
-		return;
+		break;
 	case IllegalInstrException:
 		DEBUG('a', "\nLenh dang co gang thuc thi khong duoc ho tro.");
 		printf("\n\nLenh dang co gang thuc thi khong duoc ho tro.");
 		interrupt->Halt();
-		return;
+		break;
 	case NumExceptionTypes:
 		DEBUG('a', "\nChuong trinh gap loi ngoai le so.");
 		printf("\n\nChuong trinh gap loi ngoai le so.");
 		interrupt->Halt();
-		return;
+		break;
 
 	case SyscallException:
 		switch (type)
