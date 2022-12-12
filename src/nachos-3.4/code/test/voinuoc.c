@@ -1,98 +1,129 @@
+/*
+	Chuong trinh voinuoc cua bai toan 2 voi nuoc
+*/
+
 #include "syscall.h"
-#include "copyright.h"
 
-void main()
+int main()
 {
-	// Khai bao
-	int f_Success; // Bien co dung de kiem tra thanh cong
-	SpaceId  si_voinuoc, si_result;	// Bien id cho file
-	char c_readFile;	// Bien ki tu luu ki tu doc tu file
-	int v1, v2;		// Voi 1, voi 2
-	int v;			// Dung tich nuoc cua sinh vien
-	int flag_done_result;	// Bien co luu dau hieu doc xong file result
+	// ------------------------ Khai bao cac bien dung trong chuong trinh ---------------------------------------
+	int fileOut; // File output.txt
 
-	//-----------------------------------------------------------
-	
-	v1 = v2 = 0;
-	// Xu ly voi nuoc
-	// WHILE(11111111111111111111111111111111111111)
-	while(1)
+	int flag;		// Ghi nhan ket qua cac ham thanh cong hay that bai
+	int V;			// Dung tich binh nuoc
+	int len;		// Do dai cua chuoi V
+	char c[1];	// Dung de doc ghi file
+	int v1, v2; // So lit can rot o voi 1 va voi 2 tai thoi diem dang xet
+
+	// ------------------------ Khoi tao file, neu khong thanh cong thi dung chuong trinh ------------------------
+	fileOut = Open("./test/output.txt", 0);
+	if (fileOut == -1)
 	{
-		Wait("m_vn");
-
-		// Mo file result.txt de ghi voi nao su dung
-		si_result = Open("result.txt", 0);
-		if(si_result == -1)
-		{		//?
-			Signal("sinhvien");
-			return;
-		}
-		// WHILE(2222222222222222222222222222222222222222)
-		while(1)
-		{
-			Wait("voinuoc");
-			c_readFile = 0;			
-			// Mo file voi nuoc .txt de doc dung tich
-			si_voinuoc = Open("voinuoc.txt", 1);
-			if(si_voinuoc == -1)
-			{
-				//?
-				Close(si_result);
-				Signal("sinhvien");
-			
-				return;
-			}
-		
-			v = 0;
-			flag_done_result = 0;
-			// WHILE(3333333333333333333333333333333333333333333333)
-			while(1)
-			{			
-				if(Read(&c_readFile, 1, si_voinuoc)  == -2)
-				{	
-					Close(si_voinuoc);			
-					break;
-				}
-				if(c_readFile != '*')
-				{
-					v = v* 10 + (c_readFile - 48);
-				}
-				else
-				{
-					flag_done_result = 1;				
-					Close(si_voinuoc);
-					break;			
-				}
-			
-			}
-			// WHILE(3333333333333333333333333333333333333333333333)
-			if(v!= 0)
-			{
-				// Dung voi 1
-				if(v1 <= v2)
-				{
-					v1 += v;
-					Write("1", 1, si_result);
-				}
-				else	// Dung voi 2
-				{					
-					v2 += v;
-					Write("2", 1, si_result);
-					
-				}
-			}
-		
-			if(flag_done_result == 1)
-			{
-				v1 = v2 = 0;
-				Close(si_result);				
-				Signal("sinhvien");
-				break;				
-			}
-
-			Signal("sinhvien");
-		}
-		// WHILE(2222222222222222222222222222222222222222)	
+		PrintString("\nCan't open file output.txt!");
+		Exit(-1);
 	}
-	// WHILE(11111111111111111111111111111111111111)			
+
+	// Seek: Di chuyen toi cuoi file output
+	do
+	{
+		flag = Read(c, 1, fileOut);
+		if (flag == -1)
+		{
+			PrintString("\nRead error in file sinhvien.txt!");
+			Close(fileOut);
+			Exit(-1);
+		}
+	} while (flag != -2);
+
+	// ------------------------ Phan than chuong trinh: lay dung tich tung binh nuoc, ghi STT cua voi nuoc -------
+	v1 = 0;
+	v2 = 0;
+	while (1)
+	{
+		Wait("sinhvien");
+		// ====== Critical Section START ======
+		// Doc dung tich binh nuoc tu file output.txt (do CT sinhvien ghi vao)
+		V = 0;
+		c[0] = '0';
+		do
+		{
+			V = V * 10 + c[0] - '0';
+			flag = Read(c, 1, fileOut);
+			if (flag == -1)
+			{
+				PrintString("\nRead error in file output.txt!");
+				Close(fileOut);
+				Exit(-1);
+			}
+			if (flag == -2 || flag == 0)
+				break;
+		} while (c[0] >= '0' && c[0] <= '9');
+
+		// Neu sinhvien khong ghi them vao file output nua (ket thuc testcase), thi dung vong lap
+
+		if (V == 0)
+			break;
+
+		// Ghi ra file output.txt ket qua
+		// Neu v1 dang ranh, thi tat nhien rot bang voi 1; Tinh toan v1, v2 sau khi rot xong
+		if (v1 == 0)
+		{
+			flag = Write("1 ", 2, fileOut);
+			if (flag == -1)
+			{
+				PrintString("\nWrite error in file output.txt!");
+				Close(fileOut);
+				Exit(-1);
+			}
+
+			if (V > v2)
+			{
+				v1 = V - v2;
+				v2 = 0;
+			}
+			else
+			{
+				v2 = v2 - V;
+			}
+		}
+		// Nguoc lai rot bang voi 2
+		else
+		{
+			flag = Write("2 ", 2, fileOut);
+			if (flag == -1)
+			{
+				PrintString("\nWrite error in file output.txt!");
+				Close(fileOut);
+				Exit(-1);
+			}
+
+			if (V > v1)
+			{
+				v2 = V - v1;
+				v1 = 0;
+			}
+			else
+			{
+				v1 = v1 - V;
+			}
+		}
+		// ====== Critical Section END ========
+		Signal("voinuoc");
+	}
+	// Xuong dong sau khi xong testcase
+
+	c[0] = '\n';
+	flag = Write(c, 1, fileOut);
+	if (flag == -1)
+	{
+		PrintString("\nWrite error in file output.txt!");
+		Close(fileOut);
+		Exit(-1);
+	}
+
+	// Ra hieu cho chuong trinh main tiep tuc testcase ke tiep
+	Signal("main");
+
+	Close(fileOut);
+	Exit(0);
 }

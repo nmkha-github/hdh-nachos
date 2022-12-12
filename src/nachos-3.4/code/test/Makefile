@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt shell matmult sort createfile sinhvien voinuoc SvVn
+all: halt shell matmult sort createfile sinhvien voinuoc main
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -73,11 +73,11 @@ createfile: createfile.o start.o
 	../bin/coff2noff createfile.coff createfile
 
 
-SvVn.o: SvVn.c
-	$(CC) $(CFLAGS) -c SvVn.c
-SvVn: SvVn.o start.o
-	$(LD) $(LDFLAGS) start.o SvVn.o -o SvVn.coff
-	../bin/coff2noff SvVn.coff SvVn
+main.o: main.c
+	$(CC) $(CFLAGS) -c main.c
+main: main.o start.o
+	$(LD) $(LDFLAGS) start.o main.o -o main.coff
+	../bin/coff2noff main.coff main
 
 voinuoc.o: voinuoc.c
 	$(CC) $(CFLAGS) -c voinuoc.c

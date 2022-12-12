@@ -1,117 +1,111 @@
+/*
+	Chuong trinh sinhvien cua bai toan 2 voi nuoc
+	Ghi dung tich cac binh nuoc vao file output.txt
+*/
+
 #include "syscall.h"
-#include "copyright.h"
 
-void main()
+int main()
 {
-	// Khai bao
-	int f_Success; // Bien co dung de kiem tra thanh cong
-	SpaceId si_sinhvien, si_voinuoc;	// Bien id cho file
-	char c_readFile;	// Bien ki tu luu ki tu doc tu file
-	int flag_VN;		// Bien co de nhay den tien trinh voinuoc
-	int flag_MAIN;		// Bien co de nhay den tien trinh main
-	int lengthFile;		// Luu do dai file
-	int i_File;		// Luu con tro file
-	//-----------------------------------------------------------
-	Signal("m_vn");	
+	// ------------------------ Khai bao cac bien dung trong chuong trinh ---------------------------------------
+	int fileOut;			// File output.txt
+	int fileSinhVien; // File tam, truyen tham so tu main cho sinhvien
 
-	while(1)
+	int flag;		// Ghi nhan ket qua cac ham thanh cong hay that bai
+	int stop;		// Flag dung chuong trinh khi doc den cuoi file
+	char V[10]; // Dung tich binh nuoc (chuoi)
+	int len;		// Do dai cua chuoi V
+	char c[1];	// Dung de doc ghi file
+
+	// ------------------------ Khoi tao file, neu khong thanh cong thi dung chuong trinh ------------------------
+	fileSinhVien = Open("./test/sinhvien.txt", 1);
+	if (fileSinhVien == -1)
 	{
-		lengthFile = 0;
-
-		Wait("sinhvien");
-		
-
-		// Tao file result.txt de ghi voi nao su dung
-		f_Success = CreateFile("result.txt");
-		if(f_Success == -1)
-		{
-			Signal("main"); // tro ve tien trinh chinh
-			return;
-		}
-
-		// Mo file sinhvien.txt len de doc
-		si_sinhvien = Open("sinhvien.txt", 1);
-		if(si_sinhvien == -1)
-		{
-			Signal("main"); // tro ve tien trinh chinh
-			return;
-		}
-		
-		lengthFile = Seek(-1, si_sinhvien);
-		Seek(0, si_sinhvien);
-		i_File = 0;
-	
-		// Tao file voinuoc.txt
-		f_Success = CreateFile("voinuoc.txt");
-		if(f_Success == -1)
-		{
-			Close(si_sinhvien);
-			Signal("main"); // tro ve tien trinh chinh
-			return;
-		}
-		
-
-		// Mo file voinuoc.txt de ghi tung dung tich nuoc cua sinhvien
-		si_voinuoc = Open("voinuoc.txt", 0);
-		if(si_voinuoc == -1)
-		{
-			Close(si_sinhvien);
-			Signal("main"); // tro ve tien trinh chinh
-			return;
-		}
-		
-		// Ghi dung tich vao file voinuoc.txt tu file sinhvien.txt
-		while(i_File < lengthFile)
-		{
-			flag_VN = 0;
-			Read(&c_readFile, 1, si_sinhvien);
-			if(c_readFile != ' ')
-			{
-				Write(&c_readFile, 1, si_voinuoc);
-			}
-			else
-			{
-				flag_VN = 1;
-			}
-			if(i_File == lengthFile - 1)
-			{
-				Write("*", 1, si_voinuoc);
-				flag_VN = 1;
-			}
-			
-				
-			if(flag_VN == 1)
-			{
-				Close(si_voinuoc);
-				Signal("voinuoc");
-				// Dung chuong trinh sinhvien lai de voinuoc thuc thi
-				Wait("sinhvien");
-				
-				// Tao file voinuoc.txt
-				f_Success = CreateFile("voinuoc.txt");
-				if(f_Success == -1)
-				{
-					Close(si_sinhvien);
-					Signal("main"); // tro ve tien trinh chinh
-					return;
-				}
-		
-
-				// Mo file voinuoc.txt de ghi tung dung tich nuoc cua sinhvien
-				si_voinuoc = Open("voinuoc.txt", 0);
-				if(si_voinuoc == -1)
-				{
-					Close(si_sinhvien);
-					Signal("main"); // tro ve tien trinh chinh
-					return;
-				}
-				
-			}
-			i_File++;			
-							
-		}				
-		// Ket thuc tien trinh sinhvien va voinuoc quay lai ham SvVn
-		Signal("main");			
+		PrintString("\nCan't open file sinhvien.txt!");
+		Exit(-1);
 	}
-	// Quay lai ham Svvn	
+
+	fileOut = Open("./test/output.txt", 0);
+	if (fileOut == -1)
+	{
+		PrintString("\nCan't open file output.txt!");
+		Close(fileSinhVien);
+		Exit(-1);
+	}
+
+	// Seek: Di chuyen toi cuoi file output
+	do
+	{
+		flag = Read(c, 1, fileOut);
+		if (flag == -1)
+		{
+			PrintString("\nRead error in file sinhvien.txt!");
+			Close(fileSinhVien);
+			Close(fileOut);
+			Exit(-1);
+		}
+	} while (flag != -2);
+
+	// ------------------------ Phan than chuong trinh: lay dung tich tung binh nuoc, dat vao voi nuoc -----------
+	stop = 0;
+	do
+	{
+		// Doc dung tich tu file trung gian (het file thi dung)
+		len = 0;
+		while (1)
+		{
+			flag = Read(c, 1, fileSinhVien);
+			if (flag == -1)
+			{
+				PrintString("\nRead error in file sinhvien.txt!");
+				Close(fileSinhVien);
+				Close(fileOut);
+				Exit(-1);
+			}
+			if (flag == -2 || c[0] == ' ' || c[0] == '\n')
+				break;
+
+			V[len] = c[0];
+			len++;
+		}
+		V[len] = ' ';
+		len++; // Chen them dau cach de phan cach cac so
+
+		if (flag == -2)
+			stop = 1;
+
+		// Ghi dung tich vao cuoi file output.txt
+		Wait("voinuoc");
+		// ====== Critical Section START ======
+		// Seek: di chuyen toi cuoi file output.txt
+		do
+		{
+			flag = Read(c, 1, fileOut);
+			if (flag == -1)
+			{
+				PrintString("\nRead error in file sinhvien.txt!");
+				Close(fileSinhVien);
+				Close(fileOut);
+				Exit(-1);
+			}
+		} while (flag != -2);
+
+		// Ghi dung tich vao file
+		flag = Write(V, len, fileOut);
+		if (flag == -1)
+		{
+			PrintString("\nWrite error in file sinhvien.txt!");
+			Close(fileSinhVien);
+			Close(fileOut);
+			Exit(-1);
+		}
+		// ====== Critical Section END ========
+		Signal("sinhvien");
+	} while (!stop);
+
+	Signal("sinhvien"); // for final loop of voinuoc
+
+	Close(fileSinhVien);
+	Close(fileOut);
+	Exit(0);
 }
