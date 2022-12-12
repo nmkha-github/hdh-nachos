@@ -384,7 +384,7 @@ void Exception_Read()
 	if ((fileSystem->openf[id]->Read(temp, charCount)) > 0)
 	{
 		lastPositionInFile = fileSystem->openf[id]->GetCurrentPos();
-		// Số byte thực sự = NewPos - OldPos
+		// Số byte thực sự = lastPositionInFile - firstPositionInFile
 		System2User(addr, lastPositionInFile - firstPositionInFile, temp);
 		machine->WriteRegister(2, lastPositionInFile - firstPositionInFile);
 	}
@@ -468,30 +468,29 @@ void Exception_Write()
 
 void Exception_Exec()
 {
-	int addr;
-	addr = machine->ReadRegister(4); // doc dia chi ten chuong trinh tu thanh ghi r4
+	int virtAddr;
+	virtAddr = machine->ReadRegister(4);
 	char *name;
-	name = User2System(addr, 255); // Lay ten chuong trinh, nap vao kernel
+	name = User2System(virtAddr, 33);
 
 	if (name == NULL)
 	{
-		DEBUG('a', "\nKhong du bo nho");
-		printf("\nKhong du bo nho");
+		printf("\n Khong du vung nho trong he thong");
 		machine->WriteRegister(2, -1);
 		return;
 	}
 
-	OpenFile *openFile = fileSystem->Open(name);
-	if (openFile == NULL)
+	OpenFile *oFile = fileSystem->Open(name);
+
+	if (oFile == NULL)
 	{
-		printf("\n Khong mo duoc file chuong trinh.");
+		printf("\nKhong the mo file");
 		machine->WriteRegister(2, -1);
 		return;
 	}
 
-	delete openFile;
+	delete oFile;
 
-	// id của tiểu trình
 	int id = pTab->ExecUpdate(name);
 	machine->WriteRegister(2, id);
 
@@ -509,15 +508,8 @@ void Exception_Join()
 
 void Exception_Exit()
 {
-	int exitStatus = machine->ReadRegister(4);
-
-	if (exitStatus == 0)
-	{
-		int res = pTab->ExitUpdate(exitStatus);
-
-		currentThread->FreeSpace();
-		currentThread->Finish();
-	}
+	int exitstatus = machine->ReadRegister(4);
+	machine->WriteRegister(2, pTab->ExitUpdate(exitstatus));
 }
 
 void Exception_CreateSemaphore()
@@ -568,17 +560,16 @@ void Exception_Wait()
 		return;
 	}
 
-	if (semTab->Wait(name) == -1)
+	int result = semTab->Wait(name);
+
+	if (result == -1)
 	{
 		DEBUG('a', "\n Khong ton tai ten semaphore nay!");
 		printf("\n Khong ton tai ten semaphore nay!");
-		machine->WriteRegister(2, -1);
-		delete[] name;
-		return;
 	}
 
 	delete[] name;
-	machine->WriteRegister(2, 0);
+	machine->WriteRegister(2, result);
 }
 
 void Exception_Signal()
@@ -597,17 +588,16 @@ void Exception_Signal()
 		return;
 	}
 
-	if (semTab->Signal(name) == -1)
+	int result = semTab->Signal(name);
+
+	if (result == -1)
 	{
 		DEBUG('a', "\n Khong ton tai ten semaphore nay!");
 		printf("\n Khong ton tai ten semaphore nay!");
-		machine->WriteRegister(2, -1);
-		delete[] name;
-		return;
 	}
 
 	delete[] name;
-	machine->WriteRegister(2, 0);
+	machine->WriteRegister(2, result);
 }
 
 // Ham xu ly ngoai le runtime Exception va system call
