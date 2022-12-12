@@ -587,10 +587,10 @@ void Exception_Wait()
 void Exception_Signal()
 {
     int addr;
+    char *name;
 
     addr = machine->ReadRegister(4);
-
-    char *name = User2System(addr, 255);
+    name = User2System(addr, 255);
     if (name == NULL)
     {
         DEBUG('a', "\nKhong du bo nho");
